@@ -318,9 +318,23 @@ app.post('/getLatestChapter', (req, res) => {
       
             resp.on('end', () => {
                 const $ = cheerio.load(html);
-                let lastChap = $('.lest').children('li').eq(0).children('a').text().trim();
+                let streamLen = []
+                let maxStreams = 0;
+
+                maxStreams = $('.stream').length;
+
+                for(var i=0;i<maxStreams;i++){
+                    streamLen.push($('.stream').eq(i).children('div').eq(0).children('div').eq(0).children('span').text())
+                }
+
+                for(let i=0;i<maxStreams;i++){
+                    streamLen[i] = parseInt(streamLen[i].substring(1,4))
+                }
+
+                let bestStream = streamLen.indexOf(Math.max(...streamLen))
+
+                let lastChap = $('.stream').eq(bestStream).find('.tit').eq(0).children('a').text()
                 res.send({message:lastChap})
-                
             });
         });
     }
