@@ -306,6 +306,29 @@ app.post('/search', (req, res) => {
     }
 });
 
+app.post('/getLatestChapter', (req, res) => {
+    if(req.body.src === 'MGPK'){
+        url = req.body.link;
+        http.get(url, (resp) => {
+            let html = '';
+      
+            resp.on('data', chunk => {
+                html += chunk;
+            });
+      
+            resp.on('end', () => {
+                const $ = cheerio.load(html);
+                let lastChap = $('.lest').children('li').eq(0).children('a').text().trim();
+                res.send({message:lastChap})
+                
+            });
+        });
+    }
+});
+
+
+
+
 app.post('/getMangaInfo', (req, res) => {                       
     
     
@@ -627,7 +650,7 @@ app.post('/getMangaInfo', (req, res) => {
   
 })
 
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 4000);
 
 /*
 
