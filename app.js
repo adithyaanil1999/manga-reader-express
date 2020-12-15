@@ -32,51 +32,7 @@ app.post('/getImageList', (req, res) => {
     let response = {}
     let imageList = []
     let url = req.body.url
-    if(url.indexOf('mangakakalot') !== -1){
-        
-        // MANGAKAKALOT SCRAPER : MANGAKAKALOT IMGS are behind CLOUDFARE too bad 
-
-        http.get(url, (resp) => {
-            let html = '';
-    
-            resp.on('data', chunk => {
-                html += chunk;
-            });
-    
-            resp.on('end', () => {
-                const $ = cheerio.load(html);
-                
-                $('.vung-doc').children('img').each(function(i, el) {
-                    imageList.push($(el).attr('src'));
-                });
-                response = {
-                    'imageList': imageList
-                }
-                res.send(response)
-            });
-          });
-
-    }else if(url.indexOf('manganelo') !== -1){
-        http.get(url, (resp) => {
-            let html = '';
-    
-            resp.on('data', chunk => {
-                html += chunk;
-            });
-    
-            resp.on('end', () => {
-                const $ = cheerio.load(html);
-                
-                $('.container-chapter-reader').children('img').each(function(i, el) {
-                    imageList.push($(el).attr('src'));
-                });
-                response = {
-                    'imageList': imageList
-                }
-                res.send(response)
-            });
-          });
-    }else if(url.indexOf('fanfox.net/') !== -1){ 
+   if(url.indexOf('fanfox.net/') !== -1){ 
         
         
         // MANGA FOX REQUIRES ASYNC PROCESSING not possible with cheerio :( to be redone with puppeteer
@@ -127,65 +83,7 @@ app.post('/getMangaList', (req, res) => {
   let category = req.body.category
 
 
-  if(req.body.src === 'MGK'){ 
-    // MANGAKAKALOT SCRAPER
-
-    //DEFAULT PARAMS
-    if(type === undefined){
-        type = 'topview'
-    }
-    if(status === undefined){
-        status = 'all'
-    }
-    if(pageNo === undefined){
-        pageNo = 1
-    }
-
-    if(category === undefined){
-        category = 'all'
-    }
-
-    
-    url = `https://mangakakalot.com/manga_list?type=${type}&category=all&state=${status}&page=${pageNo}`
-    http.get(url, (resp) => {
-        let html = '';
-  
-        resp.on('data', chunk => {
-            html += chunk;
-        });
-  
-        resp.on('end', () => {
-            const $ = cheerio.load(html);
-            mangaArr = []
-            tempObj = {}
-            $('.list-truyen-item-wrap').each((idx, el) => {
-                let desc = $(el).children('p').text();
-                desc = desc.replace(/\n/g, '')
-                desc = desc.replace(/\\/g,'')
-                let title = $(el).children('h3').children('a').text();
-                let link = $(el).children('h3').children('a').attr('href');
-                let imageLink = $(el).children('a').children('img').attr('src');
-                tempObj = {
-                    'description': desc,
-                    'title': title,
-                    'link': link,
-                    'thumb': imageLink
-                }
-
-                mangaArr.push(tempObj)
-                    
-            });
-
-            response = {
-                'LatestManga': mangaArr
-            }
-            res.send(response)
-        });
-    });
-
-  }else if(req.body.src == "MGFX"){
-
-
+  if(req.body.src == "MGFX"){
     // http://fanfox.net/directory/
     url = `https://fanfox.net/directory/${pageNo}.html`
     http.get(url, (resp) => {
@@ -267,42 +165,61 @@ app.post('/getMangaList', (req, res) => {
 
 })
 
-app.post('/search', (req, res) => {
-    let response = {};
-    let title = req.body.title;
-    let tempArr = []
-
-
-    if(req.body.src === 'MGK'){
-        let url = `https://mangakakalot.com/search/story/${title}`
-        http.get(url, (resp) => {
-            let html = '';
+app.post('/autocomplete', (req, res) => {
       
-            resp.on('data', chunk => {
-                html += chunk;
+    if(req.body.type='manga'){
+        http.get(`https://myanimelist.net/search/prefix.json?type=manga&keyword=${req.body.title}&v=11`, function (response) {
+            var chunks = [];
+            response.on("data", function (chunk) {
+                chunks.push(chunk);
             });
-
-            let itemTitle = '';
-            let itemLink = '';
-            let itemThumb = '';
-
-            resp.on('end', () => {
-                const $ = cheerio.load(html);
-                $('.panel_story_list').children('.story_item').each((i,el)=>{
-                    itemLink = $(el).children('a').attr('href');
-                    itemThumb = $(el).children('a').children('img').attr('src');
-                    itemTitle = $(el).children('.story_item_right').children('.story_name').children('a').text();
-
-                    tempArr.push({
-                        'itemTitle': itemTitle,
-                        'itemLink' : itemLink,
-                        'itemThumb': itemThumb 
-                    })
-                });
-                response = {'searchList': tempArr}
-                res.send(response)
+            
+            response.on("end", function (chunk) {
+                let body = Buffer.concat(chunks);
+                jsonBody = JSON.parse(body);
+                res.send({message:jsonBody.categories[0].items})
+                
             });
         });
+    }else{
+        //comic
+    }
+});
+
+app.post('/search', (req, res) => {
+    let title = req.body.title;
+    let finalArray = [];
+    if(req.body.type === 'manga'){
+        //MangaPark Results;
+        {
+            let url = 'https://mangapark.net/search?orderby=views_a&q='+encodeURI(title);
+            http.get(url, (resp) => {
+                let html = '';
+          
+                resp.on('data', chunk => {
+                    html += chunk;
+                });
+          
+                resp.on('end', () => {
+                    const $ = cheerio.load(html);
+                    finalArray.push({
+                        src:'MGPK',
+                        thumb: $('.manga-list').children('.item').eq(0).children('table').children('tbody').children('tr').children('td').eq(0).children('a').children('img').attr('data-cfsrc'),
+                        link: 'https://mangapark.net'+$('.manga-list').children('.item').eq(0).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').attr('href'),
+                        title: $('.manga-list').children('.item').eq(0).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').children('font').text(),
+                    });
+                    res.send({searchArray:finalArray})
+                    {
+                        ///MORE source to be added
+                    }
+                });
+            });
+        }
+
+    }else if(req.body.type === 'comic'){
+        //comic
+    }else{
+        res.send({searchArray:'error'})
     }
 });
 
@@ -350,188 +267,7 @@ app.post('/getMangaInfo', (req, res) => {
     let response = {};
     let url = req.body.url;
 
-    if(url.indexOf('mangakakalot') !== -1){
-
-        //All this work for nothing :(
-
-        http.get(url, (resp) => {
-            let html = '';
-      
-            resp.on('data', chunk => {
-                html += chunk;
-            });
-      
-            resp.on('end', () => {
-                const $ = cheerio.load(html);
-                tempObj = {}    
-
-                let imageLink = $('.manga-info-pic').children('img').attr('src');
-                let desc = $('#noidungm').text();
-                desc = desc.replace(/\n/g, '')
-                desc = desc.replace(/\\/g,'')
-                let title = ''
-                let author = ''
-                let lastUpdate = ''
-                let status = ''
-                let altTitle = ''
-                let chapList = []
-
-
-                $('.manga-info-text').children('li').each(function(i, el) {
-                    if(i==0){
-                        title = $(el).children('h1').text()
-                    }
-                    if(i==1){
-                        author = $(el).text()
-                        author = author.split(':')[1];
-                        author = author.replace(/[\n ]/g, '');
-                    }
-                    if(i==2){
-                        status = $(el).text()
-                        status = status.split(':')[1];
-                        status = status.replace(/[\n ]/g, '');
-                    }
-                    if(i==3){
-                        lastUpdate = $(el).text();
-                        lastUpdate = lastUpdate.split(':')[1];
-                        lastUpdate = lastUpdate.replace(/[\n ]/g, '');
-                    }
-                });
-                
-                let chapObj = {}
-                let chapTitle = ''
-                let chapLink  = ''
-                let chapDate = ''
-                $('.chapter-list').children('.row').each(function(i,el){
-                    chapTitle = $(el).children('span').eq(0).children('a').text();
-                    chapLink = $(el).children('span').eq(0).children('a').attr('href');
-                    chapDate = $(el).children('span').eq(2).text();
-                    
-                    chapObj ={
-                        'chapterTitle': chapTitle,
-                        'chapterLink': chapLink,
-                        'chapDate': chapDate
-                    }
-
-                    chapList.push(chapObj)
-                });
-                        
-            
-                tempObj={
-                    'thumb': imageLink,
-                    'title':title,
-                    'desc': desc,
-                    'status': status,
-                    'author': author,
-                    'lastUpdate': lastUpdate,
-                    'chaperList': chapList
-                }
-    
-                response = {
-                    'mangaInfo': tempObj
-                }
-                res.send(response)
-            });
-        });
-    }else if(url.indexOf('manganelo') !== -1){
-        http.get(url, (resp) => {
-            let html = '';
-      
-            resp.on('data', chunk => {
-                html += chunk;
-            });
-      
-            resp.on('end', () => {
-                const $ = cheerio.load(html);
-                tempObj = {}    
-
-                let imageLink = $('.info-image').children('img').attr('src');
-                let desc = $('.panel-story-info-description').text();
-                desc = desc.replace(/\n/g, '')
-                desc = desc.replace(/\\/g,'')
-                let title = ''
-                let author = ''
-                let lastUpdate = ''
-                let status = ''
-                let altTitle = ''
-                let chapList = []
-
-
-                title = $('.story-info-right').children('h1').text();
-                lastUpdate = $('.story-info-right-extent').children('p').eq(0).children('.stre-value').text();
-                let lenTable = $('.variations-tableInfo').children('tbody').children('tr').length;
-                console.log(lenTable)
-                if(lenTable === 3){
-                    $('.variations-tableInfo').children('tbody').children('tr').each(function(i, el) {
-                        if(i==0){
-                            author = $(el).children('.table-value').children('a').text()
-                            author = author.replace(/[\n ]/g, '');
-                        }
-                        if(i==1){
-                            status = $(el).children('.table-value').text()
-                            status = status.replace(/[\n ]/g, '');
-                        
-                        }
-                    });
-                }else if(lenTable ==4){
-                    $('.variations-tableInfo').children('tbody').children('tr').each(function(i, el) {
-                        if(i==0){
-                            altTitle = $(el).children('.table-value').children('a').text()
-                            altTitle = author.replace(/[\n ]/g, '');
-                        }
-                        if(i==1){
-                            author = $(el).children('.table-value').children('a').text()
-                            author = author.replace(/[\n ]/g, '');
-                        }
-                        if(i==2){
-                            status = $(el).children('.table-value').text()
-                            status = status.replace(/[\n ]/g, '');
-                        
-                        }
-                    });
-                }
-               
-                
-                let chapObj = {}
-                let chapTitle = ''
-                let chapLink  = ''
-                let chapDate = ''
-
-                $('.row-content-chapter').children('.a-h').each(function(i,el){
-                    chapTitle = $(el).children('a').text();
-                    chapLink = $(el).children('a').attr('href');
-                    chapDate = $(el).children('span').eq(1).text();
-                    
-                    chapObj ={
-                        'chapterTitle': chapTitle,
-                        'chapterLink': chapLink,
-                        'chapDate': chapDate
-                    }
-
-                    chapList.push(chapObj)
-                });
-                        
-            
-                tempObj={
-                    'thumb': imageLink,
-                    'title':title,
-                    'desc': desc,
-                    'status': status,
-                    'author': author,
-                    'lastUpdate': lastUpdate,
-                    'chapterList': chapList
-                }
-    
-                response = {
-                    'mangaInfo': tempObj
-                }
-                res.send(response)
-            });
-        });
-
-
-
-    }else if(url.indexOf('fanfox.net') !== -1){
+   if(url.indexOf('fanfox.net') !== -1){
         let tempObj = {}
         http.get(url, (resp) => {
             let html = '';
