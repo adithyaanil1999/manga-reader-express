@@ -4,6 +4,8 @@ const cheerio = require('cheerio');
 const http = require('https');
 const cors = require('cors')
 const puppeteer = require('puppeteer');
+const axios = require('axios');
+
 
 
 const app = express()
@@ -13,19 +15,98 @@ app.use(cors())
 // MANGAKAKALOT AND MANGAFOX(can be redone) dont work
 // DEMO DEPLOYED AT: https://manga-reader-express.herokuapp.com/
 
-app.post('/getImageList', (req, res) => {
-    //Gets image link array from chapter url
-
-
-    let response = {}
-    let imageList = []
+app.post('/getImageList', async(req, res) => {
     let url = req.body.url
     if (url.indexOf('fanfox.net/') !== -1) {
+        http.get(url, (resp) => {
+            let html = '';
 
+            resp.on('data', chunk => {
+                html += chunk;
+            });
 
-        // MANGA FOX REQUIRES ASYNC PROCESSING not possible with cheerio :( to be redone with puppeteer
-        res.send('Work in progress')
+            resp.on('end', () => {
+                let imagecount = (html.substring(html.lastIndexOf('imagecount')));
+                imagecount = imagecount.substring(0, imagecount.indexOf(';'));
+                imagecount = imagecount.match(/\d+/g).join([]);
 
+                imagecount = parseInt(imagecount);
+
+                let temp = (html.substring(html.lastIndexOf('chapterid')));
+                chapterid = temp.substring(0, temp.indexOf(';'));
+                chapterid = chapterid.match(/\d+/g).join([]);
+
+                function callFetch() {
+                    //limits scope of eval statement
+                    let urlParsed = url;
+                    urlParsed = urlParsed.substring(0, urlParsed.lastIndexOf('/'));
+                    urlParsed = urlParsed + `/chapterfun.ashx?cid=${chapterid}&page=1&key=`
+                    var config = {
+                        method: 'get',
+                        url: urlParsed,
+                        headers: {
+                            'Referer': 'https://fanfox.net/manga/konjiki_no_moji_tsukai_yuusha_yonin_ni_makikomareta_unique_cheat/v12/c066/1.html',
+                        },
+                    };
+                    axios(config)
+                        .then(function(response) {
+
+                            let zeroadd = function(number) {
+                                length = 2;
+                                var my_string = '' + number;
+                                while (my_string.length < length) {
+                                    my_string = '0' + my_string;
+                                }
+
+                                return my_string;
+                            }
+
+                            let imgList = []
+
+                            let re = eval(JSON.stringify(response.data))
+                            re = eval(re)
+
+                            function findIndexOfRepeat(a, b) {
+                                var shorterLength = Math.min(a.length, b.length);
+                                for (var i = 0; i < shorterLength; i++) {
+                                    if (a[i] !== b[i] && isNaN(parseInt(b[i]))) {
+                                        return i - 1;
+                                    } else if (a[i] !== b[i]) {
+                                        console.log(parseInt(b[i + 1]))
+                                        return i;
+                                    }
+                                }
+                                if (a.length !== b.length) return shorterLength;
+
+                                return -1;
+                            }
+                            let indexChange = findIndexOfRepeat(d[0], d[1]);
+                            console.log(d)
+                            d = d[0];
+                            console.log(d[indexChange])
+                            let startIndex = parseInt(d.substring(indexChange - 1, indexChange + 1));
+                            let left = d.substring(0, indexChange - 1)
+                            left = 'https:' + left;
+                            let right = d.substring(indexChange + 1)
+                            let t = ''
+                            for (let i = 1; i < imagecount; i++) {
+                                t = left + zeroadd(startIndex) + right;
+                                startIndex++;
+                                imgList.push(t);
+                                t = '';
+
+                            }
+                            res.send({ imageList: imgList })
+
+                        })
+                        .catch(function(error) {
+                            console.log(error);
+                        });
+                }
+
+                callFetch();
+            });
+        });
 
 
 
@@ -33,6 +114,7 @@ app.post('/getImageList', (req, res) => {
         async function run() {
             //MANGAPARK
             let browser;
+            url = url.substring(0, url.lastIndexOf('/'))
             try {
                 browser = await puppeteer.launch({
                     args: [
@@ -47,7 +129,7 @@ app.post('/getImageList', (req, res) => {
                 res.send({ imageList: imgs })
             } catch (e) {
                 res.send({ errormsg: "Something went wrong with the scrapper" });
-                console.log(e)
+                console.log(e);
             } finally {
                 await browser.close();
             }
@@ -183,10 +265,12 @@ app.post('/autocomplete', (req, res) => {
 app.post('/search', (req, res) => {
     let title = req.body.title;
     let finalArray = [];
+    let maxItem = 3;
+
     if (req.body.type === 'manga') {
-        //MangaPark Results;
         {
-            let url = 'https://mangapark.net/search?orderby=views_a&q=' + encodeURI(title);
+            ///MORE source to be added
+            let url = 'https://fanfox.net/search?title=' + encodeURI(title);
             http.get(url, (resp) => {
                 let html = '';
 
@@ -196,22 +280,41 @@ app.post('/search', (req, res) => {
 
                 resp.on('end', () => {
                     const $ = cheerio.load(html);
-                    finalArray.push({
-                        src: 'MGPK',
-                        thumb: $('.manga-list').children('.item').eq(0).children('table').children('tbody').children('tr').children('td').eq(0).children('a').children('img').attr('data-cfsrc'),
-                        link: 'https://mangapark.net' + $('.manga-list').children('.item').eq(0).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').attr('href'),
-                        title: $('.manga-list').children('.item').eq(0).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').children('font').text(),
-                    });
-                    res.send({ searchArray: finalArray })
+                    for (let i = 0; i < maxItem; i++) {
+                        finalArray.push({
+                            src: 'MGFX',
+                            thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
+                            link: 'https://fanfox.net' + $('.manga-list-4-list').children('li').eq(i).children('a').attr('href'),
+                            title: $('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim(),
+                        });
+                    } {
+                        let url = 'https://mangapark.net/search?orderby=views_a&q=' + encodeURI(title);
+                        http.get(url, (resp) => {
+                            let html = '';
 
-                    {
-                        ///MORE source to be added
+                            resp.on('data', chunk => {
+                                html += chunk;
+                            });
 
-
+                            resp.on('end', () => {
+                                const $ = cheerio.load(html);
+                                for (let i = 0; i < maxItem; i++) {
+                                    finalArray.push({
+                                        src: 'MGPK',
+                                        thumb: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(0).children('a').children('img').attr('data-cfsrc'),
+                                        link: 'https://mangapark.net' + $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').attr('href'),
+                                        title: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text(),
+                                    });
+                                }
+                                res.send({ searchArray: finalArray })
+                            });
+                        });
                     }
                 });
             });
         }
+        //MangaPark Results;
+
 
     } else if (req.body.type === 'comic') {
         //comic
@@ -251,6 +354,21 @@ app.post('/getLatestChapter', (req, res) => {
                 res.send({ message: lastChap })
             });
         });
+    } else if (req.body.src === 'MGFX') {
+        url = req.body.link;
+        http.get(url, (resp) => {
+            let html = '';
+
+            resp.on('data', chunk => {
+                html += chunk;
+            });
+
+            resp.on('end', () => {
+                const $ = cheerio.load(html);
+                res.send({ message: $('.detail-main-list').children('li').eq(0).children('a').children('.detail-main-list-main').children('.title3').text() })
+            });
+        });
+
     }
 });
 
@@ -421,13 +539,35 @@ app.post('/getGenres', (req, res) => {
                 res.send({ genreList: genreList });
             });
         });
+    } else if (req.body.src === "MGFX") {
+        let url = "https://fanfox.net/directory/";
+        let genreList = [];
+        http.get(url, (resp) => {
+
+            let html = '';
+
+            resp.on('data', chunk => {
+                html += chunk;
+            });
+
+            resp.on('end', () => {
+                const $ = cheerio.load(html);
+                $('.browse-bar-filter-list').children('div').children('ul').children('li').each((i, el) => {
+                    genreList.push({
+                        link: "https://fanfox.net" + $(el).children('a').attr('href'),
+                        title: $(el).children('a').text(),
+                    })
+                });
+
+                res.send({ genreList: genreList });
+            });
+        });
     }
 });
 
 app.post('/genreManga', (req, res) => {
     if (req.body.src === 'MGPK') {
         let url = req.body.link + `/${req.body.page}?views_t`;
-        console.log(url);
         http.get(url, (resp) => {
 
             let html = '';
@@ -468,22 +608,47 @@ app.post('/genreManga', (req, res) => {
                 }
             });
         });
+    } else if (req.body.src === 'MGFX') {
+        let url = req.body.link + http + `${req.body.page}.html`;
+        http.get(url, (resp) => {
+
+            let html = '';
+
+            resp.on('data', chunk => {
+                html += chunk;
+            });
+
+            resp.on('end', () => {
+                const $ = cheerio.load(html);
+                mangaArr = []
+                tempObj = {}
+
+                $('.manga-list-1-list').children('li').each((i, el) => {
+                    let title = $(el).children('.manga-list-1-item-title').children('a').text().trim();
+                    let link = $(el).children('.manga-list-1-item-title').children('a').attr('href');
+                    link = 'https://fanfox.net' + link;
+                    let imageLink = $(el).children('a').children('img').attr('src');
+                    tempObj = {
+                        'description': '',
+                        'title': title,
+                        'link': link,
+                        'thumb': imageLink
+                    }
+                    mangaArr.push(tempObj)
+
+                });
+
+                let response = {
+                    'LatestManga': mangaArr
+                }
+                res.send(response)
+
+
+            });
+        });
     }
 });
 
 
 
 app.listen(process.env.PORT || 4000);
-
-/*
-s
-
-
-        fetch('https://cors-anywhere.herokuapp.com/https://mangapark.net/manga/i-became-a-millionaire-s-daughter/i2614002/c27').then(function(response) {
-            return response.text();
-        }).then(function(string) {
-            const r = string;
-            console.log(r)
-        });
-
-*/
