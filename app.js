@@ -582,7 +582,6 @@ app.post('/genreManga', (req, res) => {
                 tempObj = {}
 
                 if ($('body').find($('.no-match')).length !== 0) {
-                    console.log('end');
                     res.send({
                         'LatestManga': 'end'
                     })
@@ -609,7 +608,7 @@ app.post('/genreManga', (req, res) => {
             });
         });
     } else if (req.body.src === 'MGFX') {
-        let url = req.body.link + http + `${req.body.page}.html`;
+        let url = req.body.link + `${req.body.page}.html`;
         http.get(url, (resp) => {
 
             let html = '';
