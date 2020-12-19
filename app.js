@@ -402,25 +402,13 @@ app.post('/getMangaInfo', (req, res) => {
 
 
                 let chapterList = []
-                let chapObj = {}
-                let chapTitle = ''
-                let chapLink = ''
-                let chapDate = ''
-
-                $('.detail-main-list').children('li').each((i, el) => {
-                    chapTitle = $(el).children('a').children('.detail-main-list-main').children('.title3').text();
-                    chapDate = $(el).children('a').children('.detail-main-list-main').children('.title2').text();
-                    chapLink = $(el).children('a').attr('href');
-                    chapLink = 'https://fanfox.net' + chapLink
-
-                    chapObj = {
-                        'chapterTitle': chapTitle,
-                        'chapterLink': chapLink,
-                        'chapDate': chapDate
-                    }
-
-                    chapterList.push(chapObj);
-                });
+                    // $('.detail-main-list').children('li').each((i, el) => {
+                    //     chapterList.push({
+                    //         'chapterTitle': $(el).children('a').children('.detail-main-list-main').children('.title3').text(),
+                    //         'chapterLink': 'https://fanfox.net' + $(el).children('a').attr('href'),
+                    //         'chapDate': $(el).children('a').children('.detail-main-list-main').children('.title2').text(),
+                    //     });
+                    // });
 
                 tempObj = {
                     'thumb': thumb,
@@ -429,7 +417,7 @@ app.post('/getMangaInfo', (req, res) => {
                     'status': status,
                     'author': author,
                     'lastUpdate': lastUpdate,
-                    'chapterList': chapterList
+                    // 'chapterList': chapterList
                 }
 
                 response = {
