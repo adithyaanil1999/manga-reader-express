@@ -14,6 +14,7 @@ app.use(cors())
 
 // MANGAKAKALOT AND MANGAFOX(can be redone) dont work
 // DEMO DEPLOYED AT: https://manga-reader-express.herokuapp.com/
+// buildpack https://github.com/jontewks/puppeteer-heroku-buildpack.git
 
 app.post('/getImageList', async(req, res) => {
     let url = req.body.url
@@ -392,13 +393,12 @@ app.post('/getMangaInfo', (req, res) => {
 
             resp.on('end', () => {
                 const $ = cheerio.load(html);
-                console.log($.text())
                 tempObj = {}
                 let thumb = $('.detail-info-cover-img').attr('src');
                 let title = $('.detail-info-right-title-font').text();
                 let status = $('.detail-info-right-title-tip').text();
                 let author = $('.detail-info-right-say').children('a').text();
-                // let lastUpdate = $('.detail-main-list-title-right').text();
+                let lastUpdate = $('.detail-main-list-title-right').text();
                 let desc = $('.detail-info-right-content').text();
 
 
@@ -411,15 +411,13 @@ app.post('/getMangaInfo', (req, res) => {
                     });
                 });
 
-                console.log(chapterList)
-
                 tempObj = {
                     'thumb': thumb,
                     'title': title,
                     'desc': desc,
                     'status': status,
                     'author': author,
-                    'html': $.text(),
+                    'lastUpdate': lastUpdate,
                     'chapterList': chapterList
                 }
 
@@ -442,8 +440,6 @@ app.post('/getMangaInfo', (req, res) => {
 
             resp.on('end', () => {
                 const $ = cheerio.load(html);
-                console.log($.text().length)
-
                 let thumb = $('.cover').children('img').attr('data-cfsrc');
                 let title = $('.pb-1').children('h2').children('a').text();
                 let desc = $('.summary').text();
@@ -521,7 +517,6 @@ app.post('/getGenres', (req, res) => {
 
             resp.on('end', () => {
                 const $ = cheerio.load(html);
-
                 $('#top-genres').children('.items').children('div').each((i, el) => {
                     genreList.push({
                         link: "https://mangapark.net" + $(el).children('a').eq(0).attr('href'),
