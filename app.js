@@ -392,7 +392,7 @@ app.post('/getMangaInfo', (req, res) => {
 
             resp.on('end', () => {
                 const $ = cheerio.load(html);
-                console.log($.text().length)
+                console.log($.text())
                 tempObj = {}
                 let thumb = $('.detail-info-cover-img').attr('src');
                 let title = $('.detail-info-right-title-font').text();
@@ -419,7 +419,7 @@ app.post('/getMangaInfo', (req, res) => {
                     'desc': desc,
                     'status': status,
                     'author': author,
-                    // 'lastUpdate': lastUpdate,
+                    'html': $.text(),
                     'chapterList': chapterList
                 }
 
