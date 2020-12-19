@@ -392,23 +392,26 @@ app.post('/getMangaInfo', (req, res) => {
 
             resp.on('end', () => {
                 const $ = cheerio.load(html);
+                console.log($.text().length)
                 tempObj = {}
                 let thumb = $('.detail-info-cover-img').attr('src');
                 let title = $('.detail-info-right-title-font').text();
                 let status = $('.detail-info-right-title-tip').text();
                 let author = $('.detail-info-right-say').children('a').text();
-                let lastUpdate = $('.detail-main-list-title-right').text();
+                // let lastUpdate = $('.detail-main-list-title-right').text();
                 let desc = $('.detail-info-right-content').text();
 
 
                 let chapterList = []
-                    // $('.detail-main-list').children('li').each((i, el) => {
-                    //     chapterList.push({
-                    //         'chapterTitle': $(el).children('a').children('.detail-main-list-main').children('.title3').text(),
-                    //         'chapterLink': 'https://fanfox.net' + $(el).children('a').attr('href'),
-                    //         'chapDate': $(el).children('a').children('.detail-main-list-main').children('.title2').text(),
-                    //     });
-                    // });
+                $('.detail-main-list').children('li').each((i, el) => {
+                    chapterList.push({
+                        'chapterTitle': $(el).children('a').children('.detail-main-list-main').children('.title3').text(),
+                        'chapterLink': 'https://fanfox.net' + $(el).children('a').attr('href'),
+                        'chapDate': $(el).children('a').children('.detail-main-list-main').children('.title2').text(),
+                    });
+                });
+
+                console.log(chapterList)
 
                 tempObj = {
                     'thumb': thumb,
@@ -416,8 +419,8 @@ app.post('/getMangaInfo', (req, res) => {
                     'desc': desc,
                     'status': status,
                     'author': author,
-                    'lastUpdate': lastUpdate,
-                    // 'chapterList': chapterList
+                    // 'lastUpdate': lastUpdate,
+                    'chapterList': chapterList
                 }
 
                 response = {
@@ -439,6 +442,8 @@ app.post('/getMangaInfo', (req, res) => {
 
             resp.on('end', () => {
                 const $ = cheerio.load(html);
+                console.log($.text().length)
+
                 let thumb = $('.cover').children('img').attr('data-cfsrc');
                 let title = $('.pb-1').children('h2').children('a').text();
                 let desc = $('.summary').text();
@@ -516,6 +521,7 @@ app.post('/getGenres', (req, res) => {
 
             resp.on('end', () => {
                 const $ = cheerio.load(html);
+
                 $('#top-genres').children('.items').children('div').each((i, el) => {
                     genreList.push({
                         link: "https://mangapark.net" + $(el).children('a').eq(0).attr('href'),
