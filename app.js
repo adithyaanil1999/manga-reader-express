@@ -377,7 +377,6 @@ app.post('/getLatestChapter', (req, res) => {
 
 app.post('/getMangaInfo', (req, res) => {
 
-
     // Gets info and chapter list of manga from url
     let response = {};
     let url = req.body.url;
