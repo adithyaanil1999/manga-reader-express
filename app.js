@@ -117,35 +117,32 @@ app.post('/getImageList', async(req, res) => {
 
 
     } else if (url.indexOf('mangapark.net') !== -1) {
-        async function run() {
-            //MANGAPARK
-            let browser;
-            url = url.substring(0, url.lastIndexOf('/'))
-            try {
-                browser = await puppeteer.launch({
-                    args: [
-                        '--no-sandbox',
-                        '--disable-setuid-sandbox',
-                    ],
-                });
-                const page = await browser.newPage();
-                await page.setViewport({ width: 1200, height: 1200 });
-                await page.goto(url, { waitUntil: 'load', timeout: 0 });
-                const imgs = await page.$$eval('.img-link img[src]', imgs => imgs.map(img => img.getAttribute('src')));
-                res.send({ imageList: imgs })
-            } catch (e) {
-                res.send({ errormsg: "Something went wrong with the scrapper" });
-                console.log(e);
-            } finally {
-                await browser.close();
-            }
-        }
-        run();
+        url = url.substring(0, url.lastIndexOf('/'))
+        console.log(url)
+        http.get(url, (resp) => {
+            let html = '';
+
+            resp.on('data', chunk => {
+                html += chunk;
+            });
+
+            resp.on('end', () => {
+                console.log(html)
+                html = html.substring(html.indexOf('_load_pages'));
+                html = html.substring(html.indexOf('['), html.indexOf(';'))
+                let arr = eval(html)
+                let img = [];
+                for (let i of arr) {
+                    img.push(i.u)
+                }
+                res.send({ imageList: img })
+            })
+        });
     } else if (url.indexOf('mangadex') !== -1) {
 
         var config = {
             method: 'get',
-            url: url,
+            url: url + "?saver=true",
         };
 
         let parseArr = function(sv, hash, list) {
@@ -157,7 +154,6 @@ app.post('/getImageList', async(req, res) => {
 
         axios(config)
             .then(function(response) {
-                console.log(response.data)
                 res.send({
                     imageList: parseArr(response.data.data.server, response.data.data.hash, response.data.data.pages)
                 })
@@ -266,7 +262,6 @@ app.post('/getMangaList', (req, res) => {
         url = `https://mangadex.org/titles/9/${pageNo}`;
         http.get(url, (resp) => {
             let html = '';
-
             resp.on('data', chunk => {
                 html += chunk;
             });
@@ -457,7 +452,6 @@ app.post('/getLatestChapter', (req, res) => {
             url: 'https://mangadex.org/api/v2/manga/' + chapterId + '/chapters',
             headers: {
                 'Content-Type': 'application/json',
-                'Cookie': '__ddg1=mV7RTJbuzBMe5Qg0GKKm'
             }
         };
 
@@ -609,7 +603,6 @@ app.post('/getMangaInfo', (req, res) => {
             url: 'https://mangadex.org/api/v2/manga/' + chapterId,
             headers: {
                 'Content-Type': 'application/json',
-                'Cookie': '__ddg1=mV7RTJbuzBMe5Qg0GKKm'
             },
             data: data
         };
@@ -800,9 +793,6 @@ app.post('/getGenres', (req, res) => {
         var config = {
             method: 'get',
             url: 'https://mangadex.org/api/v2/tag/',
-            headers: {
-                'Cookie': '__ddg1=mV7RTJbuzBMe5Qg0GKKm'
-            },
             data: ''
         };
 
