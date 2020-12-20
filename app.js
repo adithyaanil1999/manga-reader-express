@@ -341,12 +341,14 @@ app.post('/search', (req, res) => {
                     resp.on('end', () => {
                         const $ = cheerio.load(html);
                         for (let i = 0; i < maxItem; i++) {
-                            finalArray.push({
-                                src: 'MGFX',
-                                thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
-                                link: 'https://fanfox.net' + $('.manga-list-4-list').children('li').eq(i).children('a').attr('href'),
-                                title: $('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim(),
-                            });
+                            if ($('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim()) {
+                                finalArray.push({
+                                    src: 'MGFX',
+                                    thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
+                                    link: 'https://fanfox.net' + $('.manga-list-4-list').children('li').eq(i).children('a').attr('href'),
+                                    title: $('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim(),
+                                });
+                            }
                         } {
                             let url = 'https://mangapark.net/search?orderby=views_a&q=' + encodeURI(title);
                             console.log(url)
@@ -359,29 +361,33 @@ app.post('/search', (req, res) => {
 
                                 resp.on('end', () => {
                                     const $ = cheerio.load(html);
+                                    // console.log()
                                     for (let i = 0; i < maxItem; i++) {
-                                        finalArray.push({
-                                            src: 'MGPK',
-                                            thumb: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(0).children('a').children('img').attr('data-cfsrc'),
-                                            link: 'https://mangapark.net' + $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').attr('href'),
-                                            title: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text().trim(),
-                                        });
+                                        if ($('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text().trim()) {
+                                            finalArray.push({
+                                                src: 'MGPK',
+                                                thumb: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(0).children('a').children('img').attr('data-cfsrc'),
+                                                link: 'https://mangapark.net' + $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').attr('href'),
+                                                title: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text().trim(),
+                                            });
+                                        }
                                     }
-                                    // (async function() {
-                                    //     try {
-                                    //         api.agent.login("Adithyatemp", "adithya2wsome", false).then(async() => {
-                                    //             var manga = new api.Manga();
-                                    //             await manga.fillByQuery(req.body.title);
-                                    //             finalArray.push({
-                                    //                 src: 'MGDX',
-                                    //                 thumb: manga.cover,
-                                    //                 link: `https://mangadex.org/title/${manga.id}/`,
-                                    //                 title: manga.title,
-                                    //             });
-                                    //             res.send({ searchArray: finalArray })
-                                    //         });
-                                    //     } catch (e) {
-                                    //         console.log(e);
+                                    console.log(finalArray)
+                                        // (async function() {
+                                        //     try {
+                                        //         api.agent.login("Adithyatemp", "adithya2wsome", false).then(async() => {
+                                        //             var manga = new api.Manga();
+                                        //             await manga.fillByQuery(req.body.title);
+                                        //             finalArray.push({
+                                        //                 src: 'MGDX',
+                                        //                 thumb: manga.cover,
+                                        //                 link: `https://mangadex.org/title/${manga.id}/`,
+                                        //                 title: manga.title,
+                                        //             });
+                                        //             res.send({ searchArray: finalArray })
+                                        //         });
+                                        //     } catch (e) {
+                                        //         console.log(e);
                                     res.send({ searchArray: finalArray })
                                         // }
                                         // })();
