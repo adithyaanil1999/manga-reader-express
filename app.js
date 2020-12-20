@@ -6,7 +6,7 @@ const http = require('https');
 const cors = require('cors')
 const puppeteer = require('puppeteer');
 const axios = require('axios');
-const { listenerCount } = require('cluster');
+const api = require("mangadex-full-api");
 
 
 
@@ -330,30 +330,9 @@ app.post('/search', (req, res) => {
 
     if (req.body.type === 'manga') {
         {
-            // let url = 'https://mangadex.org/search?title=' + encodeURI(title);
-            // console.log(url)
-            // http.get(url, (resp) => {
-            //     let html = '';
 
-            //     resp.on('data', chunk => {
-            //         html += chunk;
-            //     });
 
-            //     resp.on('end', () => {
-            //         const $ = cheerio.load(html);
-            //         console.log(cheerio.html($('body').children('#content')))
-            //             // console.log(cheerio.html($('.container').children('.mx-0').children('div').eq(0)))
-            //         console.log($('.container').children('.mx-0').children('div').eq(0));
-            //         // console.log($('.manga-entry').eq(0).children('div').eq(1).children('a').text().trim())
-            //         // for (let i = 0; i < maxItem; i++) {
-            //         //     finalArray.push({
-            //         //         src: 'MGDX',
-            //         //         thumb: 'https://mangadex.org' + $('.manga-entry').eq(i).children('div').eq(0).children('a').children('img').attr('src'),
-            //         //         link: 'https://mangadex.org' + $('.manga-entry').eq(i).children('div').eq(1).children('a').attr('href'),
-            //         //         title: $('.manga-entry').eq(i).children('div').eq(1).children('a').text().trim(),
-            //         //     });
 
-            //         // } 
             {
                 ///MORE source to be added
                 let url = 'https://fanfox.net/search?title=' + encodeURI(title);
@@ -389,10 +368,28 @@ app.post('/search', (req, res) => {
                                             src: 'MGPK',
                                             thumb: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(0).children('a').children('img').attr('data-cfsrc'),
                                             link: 'https://mangapark.net' + $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').attr('href'),
-                                            title: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text(),
+                                            title: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text().trim(),
                                         });
                                     }
-                                    res.send({ searchArray: finalArray })
+                                    (async function() {
+                                        try {
+                                            api.agent.login("Adithyatemp", "adithya2wsome", false).then(async() => {
+                                                var manga = new api.Manga();
+                                                await manga.fillByQuery(req.body.title);
+                                                let chapterId = manga.chapters[0].id;
+                                                finalArray.push({
+                                                    src: 'MGDX',
+                                                    thumb: manga.cover,
+                                                    link: `https://mangadex.org/title/${chapterId}/`,
+                                                    title: manga.title,
+                                                });
+                                                res.send({ searchArray: finalArray })
+                                            });
+                                        } catch (e) {
+                                            console.log(e);
+                                            res.send({ searchArray: finalArray })
+                                        }
+                                    })();
                                 });
                             });
                         }
