@@ -1,3 +1,4 @@
+const _ = require('underscore');
 const express = require('express')
 const bodyParser = require('body-parser')
 const cheerio = require('cheerio');
@@ -5,6 +6,7 @@ const http = require('https');
 const cors = require('cors')
 const puppeteer = require('puppeteer');
 const axios = require('axios');
+const { listenerCount } = require('cluster');
 
 
 
@@ -12,9 +14,12 @@ const app = express()
 app.use(bodyParser.json());
 app.use(cors())
 
+const apiUrl = 'https://mangadex.org/api/v2/'; // for mangadex
+
 // MANGAKAKALOT AND MANGAFOX(can be redone) dont work
 // DEMO DEPLOYED AT: https://manga-reader-express.herokuapp.com/
 // buildpack https://github.com/jontewks/puppeteer-heroku-buildpack.git
+//node app.js > app.log 2>&1
 
 app.post('/getImageList', async(req, res) => {
     let url = req.body.url
@@ -136,6 +141,31 @@ app.post('/getImageList', async(req, res) => {
             }
         }
         run();
+    } else if (url.indexOf('mangadex') !== -1) {
+
+        var config = {
+            method: 'get',
+            url: url,
+        };
+
+        let parseArr = function(sv, hash, list) {
+            for (let i = 0; i < list.length; i++) {
+                list[i] = sv + hash + '/' + list[i];
+            }
+            return list;
+        }
+
+        axios(config)
+            .then(function(response) {
+                console.log(response.data)
+                res.send({
+                    imageList: parseArr(response.data.data.server, response.data.data.hash, response.data.data.pages)
+                })
+            })
+            .catch(function(error) {
+                console.log(error);
+            });
+
     }
 })
 
@@ -149,11 +179,6 @@ app.post('/getMangaList', (req, res) => {
     let response = {}
     let pageNo = req.body.page
     let url = ''
-    let type = req.body.type
-    let status = req.body.status
-    let category = req.body.category
-
-
     if (req.body.src == "MGFX") {
         // http://fanfox.net/directory/
         url = `https://fanfox.net/directory/${pageNo}.html`
@@ -237,9 +262,44 @@ app.post('/getMangaList', (req, res) => {
             });
         });
     }
+    if (req.body.src == "MGDX") {
+        url = `https://mangadex.org/titles/9/${pageNo}`;
+        http.get(url, (resp) => {
+            let html = '';
 
+            resp.on('data', chunk => {
+                html += chunk;
+            });
 
+            resp.on('end', () => {
+                const $ = cheerio.load(html);
+                mangaArr = []
+                tempObj = {}
+                console.log($('.container').children('.alert-warning').text().trim())
+                if ($('.container').children('.alert-warning').text().trim() !== '') {
+                    console.log('end');
+                    res.send({
+                        'LatestManga': 'end'
+                    })
+                } else {
+                    $('.manga-entry').each((i, el) => {
+                        tempObj = {
+                            'description': '',
+                            'title': $(el).children('div').eq(1).children('a').text().trim(),
+                            'link': 'https://mangadex.org' + $(el).children('div').eq(1).children('a').attr('href'),
+                            'thumb': 'https://mangadex.org' + $(el).children('div').eq(0).children('a').children('img').attr('src')
+                        }
+                        mangaArr.push(tempObj)
+                    });
+                    response = {
+                        'LatestManga': mangaArr
+                    }
+                    res.send(response)
+                }
 
+            });
+        });
+    }
 })
 
 app.post('/autocomplete', (req, res) => {
@@ -270,53 +330,76 @@ app.post('/search', (req, res) => {
 
     if (req.body.type === 'manga') {
         {
-            ///MORE source to be added
-            let url = 'https://fanfox.net/search?title=' + encodeURI(title);
-            http.get(url, (resp) => {
-                let html = '';
+            // let url = 'https://mangadex.org/search?title=' + encodeURI(title);
+            // console.log(url)
+            // http.get(url, (resp) => {
+            //     let html = '';
 
-                resp.on('data', chunk => {
-                    html += chunk;
-                });
+            //     resp.on('data', chunk => {
+            //         html += chunk;
+            //     });
 
-                resp.on('end', () => {
-                    const $ = cheerio.load(html);
-                    for (let i = 0; i < maxItem; i++) {
-                        finalArray.push({
-                            src: 'MGFX',
-                            thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
-                            link: 'https://fanfox.net' + $('.manga-list-4-list').children('li').eq(i).children('a').attr('href'),
-                            title: $('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim(),
-                        });
-                    } {
-                        let url = 'https://mangapark.net/search?orderby=views_a&q=' + encodeURI(title);
-                        http.get(url, (resp) => {
-                            let html = '';
+            //     resp.on('end', () => {
+            //         const $ = cheerio.load(html);
+            //         console.log(cheerio.html($('body').children('#content')))
+            //             // console.log(cheerio.html($('.container').children('.mx-0').children('div').eq(0)))
+            //         console.log($('.container').children('.mx-0').children('div').eq(0));
+            //         // console.log($('.manga-entry').eq(0).children('div').eq(1).children('a').text().trim())
+            //         // for (let i = 0; i < maxItem; i++) {
+            //         //     finalArray.push({
+            //         //         src: 'MGDX',
+            //         //         thumb: 'https://mangadex.org' + $('.manga-entry').eq(i).children('div').eq(0).children('a').children('img').attr('src'),
+            //         //         link: 'https://mangadex.org' + $('.manga-entry').eq(i).children('div').eq(1).children('a').attr('href'),
+            //         //         title: $('.manga-entry').eq(i).children('div').eq(1).children('a').text().trim(),
+            //         //     });
 
-                            resp.on('data', chunk => {
-                                html += chunk;
+            //         // } 
+            {
+                ///MORE source to be added
+                let url = 'https://fanfox.net/search?title=' + encodeURI(title);
+                http.get(url, (resp) => {
+                    let html = '';
+
+                    resp.on('data', chunk => {
+                        html += chunk;
+                    });
+
+                    resp.on('end', () => {
+                        const $ = cheerio.load(html);
+                        for (let i = 0; i < maxItem; i++) {
+                            finalArray.push({
+                                src: 'MGFX',
+                                thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
+                                link: 'https://fanfox.net' + $('.manga-list-4-list').children('li').eq(i).children('a').attr('href'),
+                                title: $('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim(),
                             });
+                        } {
+                            let url = 'https://mangapark.net/search?orderby=views_a&q=' + encodeURI(title);
+                            http.get(url, (resp) => {
+                                let html = '';
 
-                            resp.on('end', () => {
-                                const $ = cheerio.load(html);
-                                for (let i = 0; i < maxItem; i++) {
-                                    finalArray.push({
-                                        src: 'MGPK',
-                                        thumb: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(0).children('a').children('img').attr('data-cfsrc'),
-                                        link: 'https://mangapark.net' + $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').attr('href'),
-                                        title: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text(),
-                                    });
-                                }
-                                res.send({ searchArray: finalArray })
+                                resp.on('data', chunk => {
+                                    html += chunk;
+                                });
+
+                                resp.on('end', () => {
+                                    const $ = cheerio.load(html);
+                                    for (let i = 0; i < maxItem; i++) {
+                                        finalArray.push({
+                                            src: 'MGPK',
+                                            thumb: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(0).children('a').children('img').attr('data-cfsrc'),
+                                            link: 'https://mangapark.net' + $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').attr('href'),
+                                            title: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text(),
+                                        });
+                                    }
+                                    res.send({ searchArray: finalArray })
+                                });
                             });
-                        });
-                    }
+                        }
+                    });
                 });
-            });
+            }
         }
-        //MangaPark Results;
-
-
     } else if (req.body.type === 'comic') {
         //comic
     } else {
@@ -326,7 +409,7 @@ app.post('/search', (req, res) => {
 
 app.post('/getLatestChapter', (req, res) => {
     if (req.body.src === 'MGPK') {
-        url = req.body.link;
+        let url = req.body.link;
         http.get(url, (resp) => {
             let html = '';
 
@@ -356,7 +439,7 @@ app.post('/getLatestChapter', (req, res) => {
             });
         });
     } else if (req.body.src === 'MGFX') {
-        url = req.body.link;
+        let url = req.body.link;
         http.get(url, (resp) => {
             let html = '';
 
@@ -369,7 +452,29 @@ app.post('/getLatestChapter', (req, res) => {
                 res.send({ message: $('.detail-main-list').children('li').eq(0).children('a').children('.detail-main-list-main').children('.title3').text() })
             });
         });
+    } else if (req.body.src === 'MGDX') {
+        let url = req.body.link;
+        let chapterId = url.substring(url.lastIndexOf('title') + 6)
+        chapterId = parseInt(chapterId.substring(0, chapterId.lastIndexOf('/')));
+        var config = {
+            method: 'get',
+            url: 'https://mangadex.org/api/v2/manga/' + chapterId + '/chapters',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cookie': '__ddg1=mV7RTJbuzBMe5Qg0GKKm'
+            }
+        };
 
+        axios(config)
+            .then(function(response) {
+                let data2 = response.data.data;
+                for (let i of data2.chapters) {
+                    if (i.language === 'gb') {
+                        res.send({ message: 'V.' + i.volume + ' ' + 'Ch.' + i.chapter })
+                        break;
+                    }
+                }
+            })
     }
 });
 
@@ -498,6 +603,150 @@ app.post('/getMangaInfo', (req, res) => {
 
             });
         });
+    } else if (url.indexOf('mangadex') !== -1) {
+        let chapterId = url.substring(url.lastIndexOf('title') + 6)
+        chapterId = parseInt(chapterId.substring(0, chapterId.lastIndexOf('/')));
+
+        var data = JSON.stringify({ "url": apiUrl + "manga/" + chapterId });
+        var config = {
+            method: 'get',
+            url: 'https://mangadex.org/api/v2/manga/' + chapterId,
+            headers: {
+                'Content-Type': 'application/json',
+                'Cookie': '__ddg1=mV7RTJbuzBMe5Qg0GKKm'
+            },
+            data: data
+        };
+        axios(config)
+            .then(async function(response) {
+                let data = response.data.data;
+                const retStatus = function(status) {
+                    if (status == 1) {
+                        return 'Ongoing'
+                    } else if (status == 2) {
+                        return 'Completed'
+                    } else if (status == 3) {
+                        return 'Cancelled'
+                    } else if (status == 4) {
+                        return 'Hiatus'
+                    }
+                }
+
+                function parseChapterList(list) {
+                    let TimeAgo = (function() {
+                        var self = {};
+
+                        // Public Methods
+                        self.locales = {
+                            prefix: '',
+                            sufix: 'ago',
+
+                            seconds: 'less than a minute',
+                            minute: 'about a minute',
+                            minutes: '%d minutes',
+                            hour: 'about an hour',
+                            hours: 'about %d hours',
+                            day: 'a day',
+                            days: '%d days',
+                            month: 'about a month',
+                            months: '%d months',
+                            year: 'about a year',
+                            years: '%d years'
+                        };
+
+                        self.inWords = function(timeAgo) {
+                            var seconds = Math.floor((new Date() - parseInt(timeAgo)) / 1000),
+                                separator = this.locales.separator || ' ',
+                                words = this.locales.prefix + separator,
+                                interval = 0,
+                                intervals = {
+                                    year: seconds / 31536000,
+                                    month: seconds / 2592000,
+                                    day: seconds / 86400,
+                                    hour: seconds / 3600,
+                                    minute: seconds / 60
+                                };
+
+                            var distance = this.locales.seconds;
+
+                            for (var key in intervals) {
+                                interval = Math.floor(intervals[key]);
+
+                                if (interval > 1) {
+                                    distance = this.locales[key + 's'];
+                                    break;
+                                } else if (interval === 1) {
+                                    distance = this.locales[key];
+                                    break;
+                                }
+                            }
+
+                            distance = distance.replace(/%d/i, interval);
+                            words += distance + separator + this.locales.sufix;
+
+                            return words.trim();
+                        };
+
+                        return self;
+                    }());
+
+                    let retlist = []
+                    let listIndex = 0;
+                    let tempTitlePrev;
+                    let i;
+                    for (let index = 0; index < list.length; index++) {
+                        i = list[index];
+                        currentTitle = 'V.' + (i.volume === '' ? 0 : i.volume) + ' ' + 'Ch.' + i.chapter;
+                        if (i.language !== 'gb' || currentTitle === tempTitlePrev) {
+                            continue;
+                        } else {
+                            tempTitlePrev = 'V.' + (i.volume === '' ? 0 : i.volume) + ' ' + 'Ch.' + i.chapter;
+                            retlist.push({
+                                'chapterTitle': 'V.' + (i.volume === '' ? 0 : i.volume) + ' ' + 'Ch.' + i.chapter,
+                                'chapterLink': `https://mangadex.org/api/v2/chapter/${i.id}`,
+                                'chapDate': TimeAgo.inWords(i.timestamp * 1000)
+                            });
+                        }
+                    }
+                    return retlist;
+                }
+
+
+                var config = {
+                    method: 'get',
+                    url: 'https://mangadex.org/api/v2/manga/' + chapterId + '/chapters?saver=true',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+
+                axios(config)
+                    .then(function(response) {
+                        let data2 = response.data.data;
+                        response = {
+                            'mangaInfo': {
+                                'thumb': data.mainCover,
+                                'title': data.title,
+                                'desc': _.unescape(data.description.substring(0, data.description.lastIndexOf('Descriptions in Other Languages:') - 10).trim()),
+                                'status': retStatus(data.publication.status),
+                                'author': retStatus(data.author),
+                                'lastUpdate': '',
+                                'chapterList': parseChapterList(data2.chapters)
+                            }
+                        }
+                        res.send(response)
+
+                    })
+                    .catch(function(error) {
+                        console.log(error);
+                    });
+            })
+            .catch(function(error) {
+                console.log(error);
+            });
+
+
+
     }
 
 
@@ -550,6 +799,33 @@ app.post('/getGenres', (req, res) => {
                 res.send({ genreList: genreList });
             });
         });
+    } else if (req.body.src === "MGDX") {
+        let genreList = [];
+        var config = {
+            method: 'get',
+            url: 'https://mangadex.org/api/v2/tag/',
+            headers: {
+                'Cookie': '__ddg1=mV7RTJbuzBMe5Qg0GKKm'
+            },
+            data: ''
+        };
+
+        axios(config)
+            .then(function(response) {
+                let data = Object.values(response.data.data);
+                for (let i of data) {
+                    genreList.push({
+                        link: `https://mangadex.org/genre/${i.id}`,
+                        title: i.name
+                    })
+                }
+                res.send({ genreList: genreList });
+            })
+            .catch(function(error) {
+                console.log(error);
+            });
+
+
     }
 });
 
@@ -633,6 +909,44 @@ app.post('/genreManga', (req, res) => {
 
             });
         });
+    } else if (req.body.src === 'MGDX') {
+        let url = `https://mangadex.org/genre/2/action/0/${req.body.page}/?s=9#listing`;
+        http.get(url, (resp) => {
+            let html = '';
+
+            resp.on('data', chunk => {
+                html += chunk;
+            });
+
+            resp.on('end', () => {
+                const $ = cheerio.load(html);
+                mangaArr = []
+                tempObj = {}
+                console.log($('.container').children('.alert-warning').text().trim())
+                if ($('.container').children('.alert-warning').text().trim() !== '') {
+                    console.log('end');
+                    res.send({
+                        'LatestManga': 'end'
+                    })
+                } else {
+                    $('.manga-entry').each((i, el) => {
+                        tempObj = {
+                            'description': '',
+                            'title': $(el).children('div').eq(1).children('a').text().trim(),
+                            'link': 'https://mangadex.org' + $(el).children('div').eq(1).children('a').attr('href'),
+                            'thumb': 'https://mangadex.org' + $(el).children('div').eq(0).children('a').children('img').attr('src')
+                        }
+                        mangaArr.push(tempObj)
+                    });
+                    response = {
+                        'LatestManga': mangaArr
+                    }
+                    res.send(response)
+                }
+
+            });
+        });
+
     }
 });
 
