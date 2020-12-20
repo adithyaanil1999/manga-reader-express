@@ -376,11 +376,10 @@ app.post('/search', (req, res) => {
                                             api.agent.login("Adithyatemp", "adithya2wsome", false).then(async() => {
                                                 var manga = new api.Manga();
                                                 await manga.fillByQuery(req.body.title);
-                                                let chapterId = manga.chapters[0].id;
                                                 finalArray.push({
                                                     src: 'MGDX',
                                                     thumb: manga.cover,
-                                                    link: `https://mangadex.org/title/${chapterId}/`,
+                                                    link: `https://mangadex.org/title/${manga.id}/`,
                                                     title: manga.title,
                                                 });
                                                 res.send({ searchArray: finalArray })
