@@ -349,6 +349,7 @@ app.post('/search', (req, res) => {
                             });
                         } {
                             let url = 'https://mangapark.net/search?orderby=views_a&q=' + encodeURI(title);
+                            console.log(url)
                             http.get(url, (resp) => {
                                 let html = '';
 
@@ -366,24 +367,24 @@ app.post('/search', (req, res) => {
                                             title: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text().trim(),
                                         });
                                     }
-                                    (async function() {
-                                        try {
-                                            api.agent.login("Adithyatemp", "adithya2wsome", false).then(async() => {
-                                                var manga = new api.Manga();
-                                                await manga.fillByQuery(req.body.title);
-                                                finalArray.push({
-                                                    src: 'MGDX',
-                                                    thumb: manga.cover,
-                                                    link: `https://mangadex.org/title/${manga.id}/`,
-                                                    title: manga.title,
-                                                });
-                                                res.send({ searchArray: finalArray })
-                                            });
-                                        } catch (e) {
-                                            console.log(e);
-                                            res.send({ searchArray: finalArray })
-                                        }
-                                    })();
+                                    // (async function() {
+                                    //     try {
+                                    //         api.agent.login("Adithyatemp", "adithya2wsome", false).then(async() => {
+                                    //             var manga = new api.Manga();
+                                    //             await manga.fillByQuery(req.body.title);
+                                    //             finalArray.push({
+                                    //                 src: 'MGDX',
+                                    //                 thumb: manga.cover,
+                                    //                 link: `https://mangadex.org/title/${manga.id}/`,
+                                    //                 title: manga.title,
+                                    //             });
+                                    //             res.send({ searchArray: finalArray })
+                                    //         });
+                                    //     } catch (e) {
+                                    //         console.log(e);
+                                    res.send({ searchArray: finalArray })
+                                        // }
+                                        // })();
                                 });
                             });
                         }
