@@ -318,7 +318,7 @@ app.post('/getMangaList', (req, res) => {
                     desc = desc.replace(/\\/g, '')
                     let title = $(el).children('.manga-list-1-item-title').children('a').text();
                     let link = $(el).children('a').attr('href');
-                    link = 'https://mangahere.cc' + link;
+                    link = 'https://www.mangahere.cc' + link;
                     let imageLink = $(el).children('a').children('img').attr('src');
                     tempObj = {
                         'description': '',
