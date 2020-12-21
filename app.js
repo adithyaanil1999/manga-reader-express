@@ -696,7 +696,7 @@ app.post('/getMangaInfo', (req, res) => {
                 $('.detail-main-list').children('li').each((i, el) => {
                     chapterList.push({
                         'chapterTitle': $(el).children('a').children('.detail-main-list-main').children('.title3').text(),
-                        'chapterLink': 'https://mangahere.cc' + $(el).children('a').attr('href'),
+                        'chapterLink': 'https://www.mangahere.cc' + $(el).children('a').attr('href'),
                         'chapDate': $(el).children('a').children('.detail-main-list-main').children('.title2').text(),
                     });
                 });
@@ -1130,7 +1130,7 @@ app.post('/genreManga', (req, res) => {
                 $('.manga-list-1-list').children('li').each((i, el) => {
                     let title = $(el).children('.manga-list-1-item-title').children('a').text().trim();
                     let link = $(el).children('.manga-list-1-item-title').children('a').attr('href');
-                    link = 'https://mangahere.net' + link;
+                    link = 'https://www.mangahere.cc' + link;
                     let imageLink = $(el).children('a').children('img').attr('src');
                     tempObj = {
                         'description': '',
