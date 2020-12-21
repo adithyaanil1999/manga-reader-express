@@ -321,12 +321,12 @@ app.post('/getMangaList', (req, res) => {
                     link = 'https://www.mangahere.cc' + link;
                     let imageLink = $(el).children('a').children('img').attr('src');
                     tempObj = {
-                        'description': '',
-                        'title': title,
-                        'link': link,
-                        'thumb': imageLink
-                    }
-
+                            'description': '',
+                            'title': title,
+                            'link': link,
+                            'thumb': imageLink
+                        }
+                        //console.log('here')
                     mangaArr.push(tempObj)
 
                 });
