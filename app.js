@@ -460,7 +460,7 @@ app.post('/search', (req, res) => {
                                 finalArray.push({
                                     src: 'MGHR',
                                     thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
-                                    link: 'https://mangahere.cc' + $('.manga-list-4-list').children('li').eq(i).children('a').attr('href'),
+                                    link: 'https://www.mangahere.cc' + $('.manga-list-4-list').children('li').eq(i).children('a').attr('href'),
                                     title: $('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim(),
                                 });
                             }
