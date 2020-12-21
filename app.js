@@ -997,7 +997,7 @@ app.post('/getGenres', (req, res) => {
                 const $ = cheerio.load(html);
                 $('.browse-bar-filter-list').children('div').children('ul').children('li').each((i, el) => {
                     genreList.push({
-                        link: "https://mangahere.cc" + $(el).children('a').attr('href'),
+                        link: "https://www.mangahere.cc" + $(el).children('a').attr('href'),
                         title: $(el).children('a').text(),
                     })
                 });
