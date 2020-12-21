@@ -496,20 +496,22 @@ app.post('/search', (req, res) => {
                     });
 
                     resp.on('end', () => {
-                        const $ = cheerio.load(html);
-                        for (let i = 0; i < maxItem; i++) {
-                            if ($('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim()) {
-                                finalArray.push({
-                                    src: 'MGHR',
-                                    thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
-                                    link: 'https://www.mangahere.cc' + $('.manga-list-4-list').children('li').eq(i).children('a').attr('href'),
-                                    title: $('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim(),
-                                });
+                        try {
+                            const $ = cheerio.load(html);
+                            for (let i = 0; i < maxItem; i++) {
+                                if ($('.manga-list-4-list').children('li').eq(i).children('a').attr('title')) {
+                                    finalArray.push({
+                                        src: 'MGHR',
+                                        thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
+                                        link: 'https://www.mangahere.cc' + $('.manga-list-4-list').children('li').eq(i).children('a').attr('href'),
+                                        title: $('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim(),
+                                    });
+                                }
                             }
-                        }
+                        } catch (e) {
+                            console.log(e)
 
-                        {
-
+                        } {
                             let url = 'https://fanfox.net/search?title=' + encodeURI(title);
                             http.get(url, (resp) => {
                                 let html = '';
@@ -519,16 +521,20 @@ app.post('/search', (req, res) => {
                                 });
 
                                 resp.on('end', () => {
-                                    const $ = cheerio.load(html);
-                                    for (let i = 0; i < maxItem; i++) {
-                                        if ($('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim()) {
-                                            finalArray.push({
-                                                src: 'MGFX',
-                                                thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
-                                                link: 'https://fanfox.net' + $('.manga-list-4-list').children('li').eq(i).children('a').attr('href'),
-                                                title: $('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim(),
-                                            });
+                                    try {
+                                        const $ = cheerio.load(html);
+                                        for (let i = 0; i < maxItem; i++) {
+                                            if ($('.manga-list-4-list').children('li').eq(i).children('a').attr('title')) {
+                                                finalArray.push({
+                                                    src: 'MGFX',
+                                                    thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
+                                                    link: 'https://fanfox.net' + $('.manga-list-4-list').children('li').eq(i).children('a').attr('href'),
+                                                    title: $('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim(),
+                                                });
+                                            }
                                         }
+                                    } catch (e) {
+                                        console.log(e)
                                     } {
                                         let url = 'https://mangapark.net/search?orderby=views_a&q=' + encodeURI(title);
                                         http.get(url, (resp) => {
@@ -539,19 +545,25 @@ app.post('/search', (req, res) => {
                                             });
 
                                             resp.on('end', () => {
-                                                const $ = cheerio.load(html);
-                                                for (let i = 0; i < maxItem; i++) {
-                                                    if ($('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text().trim()) {
-                                                        finalArray.push({
-                                                            src: 'MGPK',
-                                                            thumb: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(0).children('a').children('img').attr('data-cfsrc'),
-                                                            link: 'https://mangapark.net' + $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').attr('href'),
-                                                            title: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text().trim(),
-                                                        });
+                                                try {
+                                                    const $ = cheerio.load(html);
+                                                    for (let i = 0; i < maxItem; i++) {
+                                                        if ($('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text().trim()) {
+                                                            finalArray.push({
+                                                                src: 'MGPK',
+                                                                thumb: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(0).children('a').children('img').attr('data-cfsrc'),
+                                                                link: 'https://mangapark.net' + $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').attr('href'),
+                                                                title: $('.manga-list').children('.item').eq(i).children('table').children('tbody').children('tr').children('td').eq(1).children('h2').children('a').text().trim(),
+                                                            });
+                                                        }
                                                     }
+                                                } catch (e) {
+                                                    console.log(e)
+                                                } finally {
+                                                    res.send({ searchArray: finalArray })
+
                                                 }
 
-                                                res.send({ searchArray: finalArray })
                                             });
                                         });
                                     }
