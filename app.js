@@ -23,6 +23,7 @@ const apiUrl = 'https://mangadex.org/api/v2/'; // for mangadex
 
 app.post('/getImageList', async(req, res) => {
     let url = req.body.url
+    console.log(url)
     if (url.indexOf('fanfox.net/') !== -1) {
         http.get(url, (resp) => {
             let html = '';
@@ -36,7 +37,6 @@ app.post('/getImageList', async(req, res) => {
                     let imagecount = (html.substring(html.lastIndexOf('imagecount')));
                     imagecount = imagecount.substring(0, imagecount.indexOf(';'));
                     imagecount = imagecount.match(/\d+/g).join([]);
-
                     imagecount = parseInt(imagecount);
 
                     let temp = (html.substring(html.lastIndexOf('chapterid')));
@@ -118,7 +118,7 @@ app.post('/getImageList', async(req, res) => {
 
 
 
-    } else if (url.indexOf('mangahere')) {
+    } else if (url.indexOf('mangahere') !== -1) {
         http.get(url, (resp) => {
             let html = '';
 
@@ -499,7 +499,7 @@ app.post('/search', (req, res) => {
                         try {
                             const $ = cheerio.load(html);
                             for (let i = 0; i < maxItem; i++) {
-                                if ($('.manga-list-4-list').children('li').eq(i).children('a').attr('title')) {
+                                if ($('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim()) {
                                     finalArray.push({
                                         src: 'MGHR',
                                         thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
@@ -524,7 +524,7 @@ app.post('/search', (req, res) => {
                                     try {
                                         const $ = cheerio.load(html);
                                         for (let i = 0; i < maxItem; i++) {
-                                            if ($('.manga-list-4-list').children('li').eq(i).children('a').attr('title')) {
+                                            if ($('.manga-list-4-list').children('li').eq(i).children('a').attr('title').trim()) {
                                                 finalArray.push({
                                                     src: 'MGFX',
                                                     thumb: $('.manga-list-4-list').children('li').eq(i).children('a').children('img').attr('src'),
