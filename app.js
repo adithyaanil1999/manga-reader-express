@@ -7,6 +7,7 @@ const cors = require('cors')
     // const puppeteer = require('puppeteer');
 const axios = require('axios');
 const api = require("mangadex-full-api");
+const { isNumber } = require('underscore');
 
 
 
@@ -23,8 +24,8 @@ const apiUrl = 'https://mangadex.org/api/v2/'; // for mangadex
 
 app.post('/getImageList', async(req, res) => {
     let url = req.body.url
-    console.log(url)
     if (url.indexOf('fanfox.net/') !== -1) {
+        console.log(url)
         http.get(url, (resp) => {
             let html = '';
 
@@ -38,7 +39,6 @@ app.post('/getImageList', async(req, res) => {
                     imagecount = imagecount.substring(0, imagecount.indexOf(';'));
                     imagecount = imagecount.match(/\d+/g).join([]);
                     imagecount = parseInt(imagecount);
-
                     let temp = (html.substring(html.lastIndexOf('chapterid')));
                     let chapterid = temp.substring(0, temp.indexOf(';'));
                     chapterid = chapterid.match(/\d+/g).join([]);
@@ -79,6 +79,12 @@ app.post('/getImageList', async(req, res) => {
                                         if (a[i] !== b[i] && isNaN(parseInt(b[i]))) {
                                             return i - 1;
                                         } else if (a[i] !== b[i]) {
+                                            // console.log(isNumber(parseInt(a[i + 1])))
+                                            // console.log(isNaN(parseInt('.')))
+                                            if (!isNaN(parseInt(a[i + 1])) && !isNaN(parseInt(b[i + 1]))) {
+                                                // console.log('+1')
+                                                return i + 1;
+                                            }
                                             return i;
                                         }
                                     }
@@ -86,8 +92,11 @@ app.post('/getImageList', async(req, res) => {
 
                                     return -1;
                                 }
+                                // console.log(d)
+                                // console.log(imagecount)
                                 let indexChange = findIndexOfRepeat(d[0], d[1]);
                                 d = d[0];
+                                // console.log(d[indexChange])
                                 let startIndex = parseInt(d.substring(indexChange - 1, indexChange + 1));
                                 let left = d.substring(0, indexChange - 1)
                                 left = 'https:' + left;
@@ -100,6 +109,7 @@ app.post('/getImageList', async(req, res) => {
                                     t = '';
 
                                 }
+                                // console.log(imgList)
                                 res.send({ imageList: imgList })
 
                             })
@@ -175,6 +185,9 @@ app.post('/getImageList', async(req, res) => {
                                         if (a[i] !== b[i] && isNaN(parseInt(b[i]))) {
                                             return i - 1;
                                         } else if (a[i] !== b[i]) {
+                                            if (!isNaN(parseInt(a[i + 1])) && !isNaN(parseInt(b[i + 1]))) {
+                                                return i + 1;
+                                            }
                                             return i;
                                         }
                                     }
@@ -263,6 +276,45 @@ app.post('/getImageList', async(req, res) => {
                 console.log(error);
             });
 
+    } else if (url.indexOf("readcomiconline.to") !== -1) {
+        // console.log("https://readcomiconline.to/Comic/The-Walking-Dead/Issue-193?id=157578")
+        var data = url;
+        console.log(url);
+        // console.log('chapViewer?link='+encodeURI(url))
+        var config = {
+            method: 'get',
+            url: url,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            data: data
+        };
+
+        axios(config)
+            .then(function(response) {
+                let html = JSON.stringify(response.data);
+                // console.log
+                let re = html.substring(html.indexOf('lstImages'));
+                re = re.substring(0, re.indexOf('var'));
+                // console.log(re)
+                re = re.replace(/\\r\\n/gm, ' ')
+                re = re.replace(/\\/gm, ' ')
+                re = "var lstImages = [];" + re;
+                re = eval(re);
+
+                for (let i = 0; i < lstImages.length; i++) {
+                    lstImages[i] = lstImages[i].replace(/\s/g, '');
+                }
+
+                res.send({
+                    imageList: lstImages
+                })
+
+            })
+            .catch(function(error) {
+                console.log(error);
+            });
+
     }
 })
 
@@ -278,6 +330,7 @@ app.post('/getMangaList', (req, res) => {
     if (req.body.src == "MGFX") {
         // http://fanfox.net/directory/
         url = `https://fanfox.net/directory/${pageNo}.html`
+            // console.log(url)
         http.get(url, (resp) => {
             let html = '';
 
@@ -314,7 +367,7 @@ app.post('/getMangaList', (req, res) => {
                     }
                     res.send(response)
                 } catch (error) {
-                    console.log(erro)
+                    console.log(error)
                 }
 
             });
@@ -412,8 +465,7 @@ app.post('/getMangaList', (req, res) => {
 
             });
         });
-    }
-    if (req.body.src == "MGDX") {
+    } else if (req.body.src == "MGDX") {
         url = `https://mangadex.org/titles/9/${pageNo}`;
         http.get(url, (resp) => {
             let html = '';
@@ -450,6 +502,44 @@ app.post('/getMangaList', (req, res) => {
                 }
             });
         });
+    } else if (req.body.src == "RCO") {
+        url = `https://readcomiconline.to/ComicList/MostPopular?page=${pageNo}`;
+        var data = url;
+        console.log(url);
+        // console.log('chapViewer?link='+encodeURI(url))
+        var config = {
+            method: 'get',
+            url: url,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            data: data
+        };
+
+        axios(config)
+            .then(function(response) {
+                let html = response.data;
+                // res.send({ html: html });
+                // console.log(html);
+                try {
+                    const $ = cheerio.load(html);
+                    let comicArr = []
+                    $('.item-list').children('div').each((i, el) => {
+                        comicArr.push({
+                            'title': $(el).children('div').eq(1).children('p').eq(0).children('a').text().trim(),
+                            'link': 'https://readcomiconline.to' + $(el).children('div').eq(0).children('a').attr('href'),
+                            'thumb': 'https://readcomiconline.to' + $(el).children('div').eq(0).children('a').children('img').attr('src')
+                        })
+                    })
+                    res.send({
+                        'LatestManga': comicArr
+                    })
+                } catch (e) {
+                    console.log(e)
+                }
+            }).catch(function(error) {
+                console.log(error);
+            });
     }
 })
 
@@ -682,6 +772,36 @@ app.post('/getLatestChapter', (req, res) => {
                     }
                 }
             }).catch((e) => { console.log(e) })
+    } else if (req.body.src === "RCO") {
+        let url = req.body.link;
+        var config = {
+            method: 'get',
+            url: url,
+            headers: {
+                'Referer': 'https://readcomiconline.to/Comic/The-Walking-Dead',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
+                'Content-Type': 'application/json',
+                'Cookie': '__cfduid=dba93911b14dc78b1e5ce63fb03c3cab01608623551'
+            },
+            data: url
+        };
+
+        axios(config)
+            .then(function(response) {
+                let html = response.data;
+                // res.send({ html: html });
+                // console.log(html);
+                try {
+                    const $ = cheerio.load(html);
+                    // console.log(html)
+                    res.send({ message: $('.listing').children('tbody').children('tr').eq(2).children('td').eq(0).children('a').text().trim() });
+                } catch (e) {
+                    console.log(e)
+
+                }
+            }).catch(e => console.log(e))
+
     }
 });
 
@@ -1008,6 +1128,70 @@ app.post('/getMangaInfo', (req, res) => {
             .catch(function(error) {
                 console.log(error);
             });
+    } else if (url.indexOf('readcomiconline.to/' !== -1)) {
+        // var data = 'https://readcomiconline.to/Comic/The-Walking-Dead';
+        // console.log(url);
+        // console.log('chapViewer?link='+encodeURI(url))
+        var config = {
+            method: 'get',
+            url: url,
+            headers: {
+                'Referer': 'https://readcomiconline.to/Comic/The-Walking-Dead',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
+                'Content-Type': 'application/json',
+                'Cookie': '__cfduid=dba93911b14dc78b1e5ce63fb03c3cab01608623551'
+            },
+            data: url
+        };
+
+        axios(config)
+            .then(function(response) {
+                let html = response.data;
+                // res.send({ html: html });
+                // console.log(html);
+                try {
+                    const $ = cheerio.load(html);
+                    // console.log(html)
+                    function fetchChapterList() {
+                        let comicArr = []
+                            // console.log($('.listing').html())
+                        $('.listing').children('tbody').children('tr').each((i, el) => {
+                            // console.log(i)
+                            if (i > 1) {
+                                comicArr.push({
+                                    'chapterTitle': $(el).children('td').eq(0).children('a').text().trim(),
+                                    'chapterLink': 'https://readcomiconline.to' + $(el).children('td').eq(0).children('a').attr('href'),
+                                    'chapDate': $(el).children('td').eq(1).text().trim()
+                                })
+                            }
+
+                        })
+
+                        return comicArr
+                    }
+
+                    comicObj = {
+                        'title': $('.heading').eq(0).children('h3').text().trim(),
+                        'author': $(".barContent").eq(0).children('div').children('p').eq(2).text().trim().substring($(".barContent").eq(0).children('div').children('p').eq(2).text().trim().indexOf(':') + 1, $(".barContent").eq(0).children('div').children('p').eq(2).text().trim().length).trim(),
+                        'status': $(".barContent").eq(0).children('div').children('p').eq(5).text().trim().substring($(".barContent").eq(0).children('div').children('p').eq(5).text().trim().indexOf(':') + 1, $(".barContent").eq(0).children('div').children('p').eq(5).text().trim().indexOf(' ')).trim(),
+                        'desc': $(".barContent").eq(0).children('div').children('p').eq(7).text().trim(),
+                        'thumb': 'https://readcomiconline.to' + $(".barContent").eq(3).children('div').children('img').attr('src'),
+                        'chapterList': fetchChapterList()
+                    };
+                    // console.log(comicObj)
+
+                    res.send({
+                        'mangaInfo': comicObj
+                    });
+
+
+                } catch (e) {
+                    console.log(e)
+                }
+            }).catch(function(error) {
+                console.log(error);
+            });
     }
 })
 
@@ -1121,6 +1305,45 @@ app.post('/getGenres', (req, res) => {
             });
 
 
+    } else if (req.body.src === "RCO") {
+        url = `https://readcomiconline.to/ComicList`;
+        var data = url;
+        // console.log(url);
+        // console.log('chapViewer?link='+encodeURI(url))
+        var config = {
+            method: 'get',
+            url: url,
+            headers: {
+                'Content-Type': 'application/json',
+                'Referer': 'https://readcomiconline.to/Comic/',
+                'Cookie': '__cfduid=dba93911b14dc78b1e5ce63fb03c3cab01608623551',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
+
+            },
+            data: data
+        };
+
+        axios(config)
+            .then(function(response) {
+                let html = response.data;
+                // res.send(html)
+                try {
+                    const $ = cheerio.load(html);
+                    let genreList = []
+                    $('.barContent').eq(1).children('div').children('a').each((i, el) => {
+                        genreList.push({
+                            link: 'https://readcomiconline.to' + $(el).attr('href'),
+                            title: $(el).text().trim()
+                        })
+                    })
+                    res.send({ genreList: genreList });
+                } catch (e) {
+                    console.log(e)
+                }
+            }).catch(function(error) {
+                console.log(error);
+            });
     }
 });
 
@@ -1291,6 +1514,46 @@ app.post('/genreManga', (req, res) => {
 
             });
         });
+
+    } else if (req.body.src === "RCO") {
+        let url = req.body.link;
+        url = url + `?page=${req.body.page}`;
+        var data = url;
+        // console.log(url);
+        // console.log('chapViewer?link='+encodeURI(url))
+        var config = {
+            method: 'get',
+            url: url,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            data: data
+        };
+
+        axios(config)
+            .then(function(response) {
+                let html = response.data;
+                // res.send({ html: html });
+                // console.log(html);
+                try {
+                    const $ = cheerio.load(html);
+                    let comicArr = []
+                    $('.item-list').children('div').each((i, el) => {
+                        comicArr.push({
+                            'title': $(el).children('div').eq(1).children('p').eq(0).children('a').text().trim(),
+                            'link': 'https://readcomiconline.to' + $(el).children('div').eq(0).children('a').attr('href'),
+                            'thumb': 'https://readcomiconline.to' + $(el).children('div').eq(0).children('a').children('img').attr('src')
+                        })
+                    })
+                    res.send({
+                        'LatestManga': comicArr
+                    })
+                } catch (e) {
+                    console.log(e)
+                }
+            }).catch(function(error) {
+                console.log(error);
+            });
 
     }
 });
