@@ -1153,6 +1153,8 @@ app.post('/getMangaInfo', (req, res) => {
                 try {
                     const $ = cheerio.load(html);
                     // console.log(html)
+                    // res.send(html)
+
                     function fetchChapterList() {
                         let comicArr = []
                             // console.log($('.listing').html())
@@ -1172,7 +1174,7 @@ app.post('/getMangaInfo', (req, res) => {
                     }
 
                     comicObj = {
-                        'title': $('.heading').eq(0).children('h3').text().trim(),
+                        'title': $(".barContent").eq(0).children('div').children('a').text().trim(),
                         'author': $(".barContent").eq(0).children('div').children('p').eq(2).text().trim().substring($(".barContent").eq(0).children('div').children('p').eq(2).text().trim().indexOf(':') + 1, $(".barContent").eq(0).children('div').children('p').eq(2).text().trim().length).trim(),
                         'status': $(".barContent").eq(0).children('div').children('p').eq(5).text().trim().substring($(".barContent").eq(0).children('div').children('p').eq(5).text().trim().indexOf(':') + 1, $(".barContent").eq(0).children('div').children('p').eq(5).text().trim().indexOf(' ')).trim(),
                         'desc': $(".barContent").eq(0).children('div').children('p').eq(7).text().trim(),
