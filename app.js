@@ -1059,9 +1059,9 @@ app.post('/getGenres', (req, res) => {
                             link: "https://fanfox.net" + $(el).children('a').attr('href'),
                             title: $(el).children('a').text(),
                         })
-                        res.send({ genreList: genreList });
-
                     });
+                    res.send({ genreList: genreList });
+
                 } catch (e) {
                     console.log(e)
                 }
