@@ -295,11 +295,14 @@ app.post('/getImageList', async(req, res) => {
                 let html = JSON.stringify(response.data);
                 // console.log
                 let re = html.substring(html.indexOf('lstImages'));
-                re = re.substring(0, re.indexOf('var'));
-                // console.log(re)
                 re = re.replace(/\\r\\n/gm, ' ')
                 re = re.replace(/\\/gm, ' ')
+                re = re.substring(0, re.indexOf('var currImage') - 1);
+                // console.log(re)
+                // console.log(re)
+
                 re = "var lstImages = [];" + re;
+                console.log(re)
                 re = eval(re);
 
                 for (let i = 0; i < lstImages.length; i++) {
@@ -314,6 +317,8 @@ app.post('/getImageList', async(req, res) => {
             .catch(function(error) {
                 console.log(error);
             });
+
+
 
     }
 })
