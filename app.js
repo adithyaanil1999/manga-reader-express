@@ -528,7 +528,7 @@ app.post('/getMangaList', (req, res) => {
                         comicArr.push({
                             'title': $(el).children('div').eq(1).children('p').eq(0).children('a').text().trim(),
                             'link': 'https://readcomiconline.to' + $(el).children('div').eq(0).children('a').attr('href'),
-                            'thumb': 'https://readcomiconline.to' + $(el).children('div').eq(0).children('a').children('img').attr('src')
+                            'thumb': $(el).children('div').eq(0).children('a').children('img').attr('src').indexOf('http') !== -1 ? $(el).children('div').eq(0).children('a').children('img').attr('src') : 'https://readcomiconline.to' + $(el).children('div').eq(0).children('a').children('img').attr('src')
                         })
                     })
                     res.send({
@@ -1176,7 +1176,7 @@ app.post('/getMangaInfo', (req, res) => {
                         'author': $(".barContent").eq(0).children('div').children('p').eq(2).text().trim().substring($(".barContent").eq(0).children('div').children('p').eq(2).text().trim().indexOf(':') + 1, $(".barContent").eq(0).children('div').children('p').eq(2).text().trim().length).trim(),
                         'status': $(".barContent").eq(0).children('div').children('p').eq(5).text().trim().substring($(".barContent").eq(0).children('div').children('p').eq(5).text().trim().indexOf(':') + 1, $(".barContent").eq(0).children('div').children('p').eq(5).text().trim().indexOf(' ')).trim(),
                         'desc': $(".barContent").eq(0).children('div').children('p').eq(7).text().trim(),
-                        'thumb': 'https://readcomiconline.to' + $(".barContent").eq(3).children('div').children('img').attr('src'),
+                        'thumb': $(".barContent").eq(3).children('div').children('img').attr('src').indexOf('http') !== -1 ? $(".barContent").eq(3).children('div').children('img').attr('src') : 'https://readcomiconline.to' + $(".barContent").eq(3).children('div').children('img').attr('src'),
                         'chapterList': fetchChapterList()
                     };
                     // console.log(comicObj)
