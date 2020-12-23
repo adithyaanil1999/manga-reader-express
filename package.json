@@ -17,6 +17,7 @@
     "cheerio": "^1.0.0-rc.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "form-data": "^3.0.0",
     "mangadex-full-api": "^4.0.0",
     "underscore": "^1.12.0"
   },
