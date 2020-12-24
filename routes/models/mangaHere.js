@@ -41,6 +41,7 @@ class MangaHere {
               .then(function (response) {
                 let imgList = [];
                 let re = eval(JSON.stringify(response.data));
+                console.log(re);
                 (0, eval)(re);
 
                 let zeroadd = function (number) {
