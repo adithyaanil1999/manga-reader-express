@@ -112,6 +112,7 @@ class MangaPark {
     return new Promise((resolve, reject) => {
       let url =
         "https://mangapark.net/search?orderby=views_a&q=" + encodeURI(title);
+      console.log(url);
       http.get(url, (resp) => {
         let html = "";
 
@@ -181,6 +182,7 @@ class MangaPark {
           } catch (e) {
             console.log(e);
           } finally {
+            console.log(finalArray);
             resolve(finalArray);
           }
         });

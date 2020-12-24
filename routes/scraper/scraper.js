@@ -18,7 +18,7 @@ const autoCompleteObj = new autoComplete();
 router.post("/getImageList", async (req, res) => {
   let url = req.body.url;
   if (url.indexOf("fanfox.net/") !== -1) {
-    mangaFoxObj.getImageList(url).then((data) => {
+    mangaFoxObj.getImageList(url, req.body.reliable).then((data) => {
       res.send(data);
     });
   } else if (url.indexOf("mangahere") !== -1) {
@@ -91,7 +91,7 @@ router.post("/autocomplete", (req, res) => {
 
 router.post("/search", (req, res) => {
   let title = req.body.title;
-  let maxItem = 3;
+  let maxItem = 20;
   let maxComicItem = 20;
   if (req.body.type === "manga") {
     {
