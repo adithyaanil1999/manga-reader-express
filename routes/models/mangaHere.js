@@ -81,11 +81,30 @@ class MangaHere {
                     d.substring(indexChange - 1, indexChange + 1)
                   );
                   let left = d.substring(0, indexChange - 1);
+                  let left2 = d.substring(0, indexChange - 2);
+                  let thirdsPlace = d[indexChange - 2];
+                  thirdsPlace = parseInt(thirdsPlace);
+                  let shiftFlag = false;
+                  left2 = "https:" + left2;
+                  left = "https:" + left;
                   left = "https:" + left;
                   let right = d.substring(indexChange + 1);
                   let t = "";
                   for (let i = 1; i < imagecount; i++) {
-                    t = left + zeroadd(startIndex) + right;
+                    if (startIndex % 100 === 0) {
+                      thirdsPlace++;
+                      startIndex = 0;
+                      shiftFlag = true;
+                    }
+                    if (shiftFlag === false) {
+                      t = left + zeroadd(startIndex, 2) + right;
+                    } else {
+                      t =
+                        left2 +
+                        thirdsPlace.toString() +
+                        zeroadd(startIndex, 2) +
+                        right;
+                    }
                     startIndex++;
                     imgList.push(t);
                     t = "";
@@ -184,11 +203,30 @@ class MangaHere {
                           d.substring(indexChange - 1, indexChange + 1)
                         );
                         let left = d.substring(0, indexChange - 1);
+                        let left2 = d.substring(0, indexChange - 2);
+                        let thirdsPlace = d[indexChange - 2];
+                        thirdsPlace = parseInt(thirdsPlace);
+                        let shiftFlag = false;
+                        left2 = "https:" + left2;
+                        left = "https:" + left;
                         left = "https:" + left;
                         let right = d.substring(indexChange + 1);
                         let t = "";
                         for (let i = 1; i < imagecount; i++) {
-                          t = left + zeroadd(startIndex) + right;
+                          if (startIndex % 100 === 0) {
+                            thirdsPlace++;
+                            startIndex = 0;
+                            shiftFlag = true;
+                          }
+                          if (shiftFlag === false) {
+                            t = left + zeroadd(startIndex, 2) + right;
+                          } else {
+                            t =
+                              left2 +
+                              thirdsPlace.toString() +
+                              zeroadd(startIndex, 2) +
+                              right;
+                          }
                           startIndex++;
                           imgList.push(t);
                           t = "";
