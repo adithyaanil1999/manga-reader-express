@@ -171,7 +171,6 @@ class MangaHere {
                   .eq(i)
                   .children("a")
                   .attr("title")
-                  .trim()
               ) {
                 finalArray.push({
                   src: "MGFX",
@@ -195,6 +194,8 @@ class MangaHere {
                     .attr("title")
                     .trim(),
                 });
+              } else {
+                continue;
               }
             }
             resolve(finalArray);
