@@ -243,4 +243,8 @@ router.post("/genreManga", (req, res) => {
   }
 });
 
+router.get("/loaderio-d93ad6fc1bf4137c4e38eee965a3e838.html", (req, res) => {
+  res.send("loaderio-d93ad6fc1bf4137c4e38eee965a3e838");
+});
+
 module.exports = router;
