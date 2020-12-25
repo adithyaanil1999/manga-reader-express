@@ -73,7 +73,6 @@ class MangaHere {
 
                     return -1;
                   }
-                  console.log(d);
 
                   let indexChange = findIndexOfRepeat(d[0], d[1]);
                   d = d[0];
@@ -123,6 +122,7 @@ class MangaHere {
         });
       });
     } else {
+      console.log("mangaHere reliable");
       return new Promise((resolve, reject) => {
         let baseurl = url.substring(0, url.lastIndexOf("/"));
         baseurl = baseurl + `/${3}.html`;
@@ -133,103 +133,50 @@ class MangaHere {
             html += chunk;
           });
 
-          resp.on("end", () => {
+          resp.on("end", async () => {
             try {
               let imagecount = html.substring(html.lastIndexOf("imagecount"));
               imagecount = imagecount.substring(0, imagecount.indexOf(";"));
               imagecount = imagecount.match(/\d+/g).join([]);
-
               imagecount = parseInt(imagecount);
-
               let temp = html.substring(html.lastIndexOf("chapterid"));
               let chapterid = temp.substring(0, temp.indexOf(";"));
               chapterid = chapterid.match(/\d+/g).join([]);
               let urlParsed = url;
               urlParsed = urlParsed.substring(0, urlParsed.lastIndexOf("/"));
-              urlParsed =
-                urlParsed + `/chapterfun.ashx?cid=${chapterid}&page=2&key=`;
-              var config = {
-                method: "get",
-                url: urlParsed,
-                headers: {
-                  Referer: "http://www.mangahere.cc/",
-                },
-              };
-              axios(config)
-                .then(function (response) {
-                  let imgList = [];
-                  let re = eval(JSON.stringify(response.data));
-                  (0, eval)(re);
-
-                  let zeroadd = function (number) {
-                    let length = 2;
-                    var my_string = "" + number;
-                    while (my_string.length < length) {
-                      my_string = "0" + my_string;
-                    }
-
-                    return my_string;
-                  };
-
-                  function findIndexOfRepeat(a, b) {
-                    var shorterLength = Math.min(a.length, b.length);
-                    for (var i = 0; i < shorterLength; i++) {
-                      if (a[i] !== b[i] && isNaN(parseInt(b[i]))) {
-                        return i - 1;
-                      } else if (a[i] !== b[i]) {
-                        if (
-                          !isNaN(parseInt(a[i + 1])) &&
-                          !isNaN(parseInt(b[i + 1]))
-                        ) {
-                          return i + 1;
-                        }
-                        return i;
-                      }
-                    }
-                    if (a.length !== b.length) return shorterLength;
-
-                    return -1;
-                  }
-                  console.log(d);
-
-                  let indexChange = findIndexOfRepeat(d[0], d[1]);
-                  d = d[0];
-                  let startIndex = parseInt(
-                    d.substring(indexChange - 1, indexChange + 1)
-                  );
-                  let left = d.substring(0, indexChange - 1);
-                  let left2 = d.substring(0, indexChange - 2);
-                  let thirdsPlace = d[indexChange - 2];
-                  thirdsPlace = parseInt(thirdsPlace);
-                  let shiftFlag = false;
-                  left2 = "https:" + left2;
-                  left = "https:" + left;
-                  let right = d.substring(indexChange + 1);
-                  let t = "";
-                  for (let i = 1; i < imagecount; i++) {
-                    if (startIndex % 100 === 0 && startIndex !== 0) {
-                      thirdsPlace++;
-                      startIndex = 0;
-                      shiftFlag = true;
-                    }
-                    if (shiftFlag === false) {
-                      t = left + zeroadd(startIndex, 2) + right;
-                    } else {
-                      t =
-                        left2 +
-                        thirdsPlace.toString() +
-                        zeroadd(startIndex, 2) +
-                        right;
-                    }
-                    startIndex++;
-                    imgList.push(t);
-                    t = "";
-                  }
-                  resolve({ imageList: imgList });
-                })
-                .catch(function (error) {
-                  console.log(error);
-                });
+              let orgUrlParsed = urlParsed;
+              async function getDarrayFromPage(page) {
+                urlParsed = orgUrlParsed;
+                urlParsed =
+                  urlParsed +
+                  `/chapterfun.ashx?cid=${chapterid}&page=${page}&key=`;
+                var config = {
+                  method: "get",
+                  url: urlParsed,
+                  headers: {
+                    Referer: "http://www.mangahere.cc/",
+                  },
+                };
+                var dr = axios(config)
+                  .then(function (response) {
+                    let re = eval(JSON.stringify(response.data));
+                    (0, eval)(re);
+                    return d;
+                  })
+                  .catch(function (error) {
+                    console.log(error);
+                  });
+                return dr;
+              }
+              let imgArr = [];
+              for (let i = 1; i <= imagecount; i += 2) {
+                var x = await getDarrayFromPage(i);
+                if (x[1]) {
+                  imgArr.push("https:" + x[0]);
+                  imgArr.push("https:" + x[1]);
+                }
+              }
+              resolve({ imageList: imgArr });
             } catch (e) {
               console.log(e);
             }

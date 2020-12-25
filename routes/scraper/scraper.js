@@ -22,7 +22,7 @@ router.post("/getImageList", async (req, res) => {
       res.send(data);
     });
   } else if (url.indexOf("mangahere") !== -1) {
-    mangaHereObj.getImageList(url).then((data) => {
+    mangaHereObj.getImageList(url, req.body.reliable).then((data) => {
       res.send(data);
     });
   } else if (url.indexOf("mangapark.net") !== -1) {
