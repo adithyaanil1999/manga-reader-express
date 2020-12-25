@@ -160,6 +160,7 @@ class MangaHere {
                   let re = eval(JSON.stringify(response.data));
                   (0, eval)(re);
 
+                  console.log(d);
                   let zeroadd = function (number, length) {
                     var my_string = "" + number;
                     while (my_string.length < length) {
@@ -207,7 +208,8 @@ class MangaHere {
                   let right = d.substring(indexChange + 1);
                   let t = "";
                   for (let i = 1; i < imagecount; i++) {
-                    if (startIndex % 100 === 0) {
+                    if (startIndex % 100 === 0 && startIndex !== 0) {
+                      // console.log("100");
                       thirdsPlace++;
                       startIndex = 0;
                       shiftFlag = true;

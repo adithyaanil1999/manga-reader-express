@@ -90,7 +90,7 @@ class MangaHere {
                   let right = d.substring(indexChange + 1);
                   let t = "";
                   for (let i = 1; i < imagecount; i++) {
-                    if (startIndex % 100 === 0) {
+                    if (startIndex % 100 === 0 && startIndex !== 0) {
                       thirdsPlace++;
                       startIndex = 0;
                       shiftFlag = true;
@@ -207,7 +207,7 @@ class MangaHere {
                   let right = d.substring(indexChange + 1);
                   let t = "";
                   for (let i = 1; i < imagecount; i++) {
-                    if (startIndex % 100 === 0) {
+                    if (startIndex % 100 === 0 && startIndex !== 0) {
                       thirdsPlace++;
                       startIndex = 0;
                       shiftFlag = true;
