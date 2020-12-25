@@ -88,7 +88,8 @@ class MangaHere {
 
                   let t = "";
                   for (let i = 1; i < imagecount; i++) {
-                    if (startIndex % 100 === 0) {
+                    if (startIndex % 100 === 0 && startIndex !== 0) {
+                      console.log("shift");
                       thirdsPlace++;
                       startIndex = 0;
                       shiftFlag = true;
