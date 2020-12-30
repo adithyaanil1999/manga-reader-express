@@ -326,14 +326,27 @@ class MangaHere {
 
   getMangaInfo(url) {
     return new Promise((resolve, reject) => {
-      http.get(url, (resp) => {
-        let html = "";
+      let pathName = url.substring(url.indexOf("/manga"), url.length);
+      var options = {
+        method: "GET",
+        hostname: "www.mangahere.cc",
+        path: pathName,
+        headers: {
+          Cookie: "isAdult=1;",
+        },
+        maxRedirects: 20,
+      };
 
-        resp.on("data", (chunk) => {
-          html += chunk;
+      var req = http.request(options, function (res) {
+        var chunks = [];
+
+        res.on("data", function (chunk) {
+          chunks.push(chunk);
         });
 
-        resp.on("end", () => {
+        res.on("end", function () {
+          var html = Buffer.concat(chunks);
+          html = html.toString();
           try {
             const $ = cheerio.load(html);
             let thumb = $(".detail-info-cover-img").attr("src");
@@ -354,8 +367,7 @@ class MangaHere {
                     .children(".title3")
                     .text(),
                   chapterLink:
-                    "https://www.mangahere.cc" +
-                    $(el).children("a").attr("href"),
+                    "https://fanfox.net" + $(el).children("a").attr("href"),
                   chapDate: $(el)
                     .children("a")
                     .children(".detail-main-list-main")
@@ -379,7 +391,13 @@ class MangaHere {
             console.log(e);
           }
         });
+
+        res.on("error", function (error) {
+          console.error(error);
+        });
       });
+
+      req.end();
     });
   }
 
@@ -420,7 +438,7 @@ class MangaHere {
 
   getGenreManga(link, page) {
     return new Promise((resolve, reject) => {
-      let url = link + `${page}.html`;
+      let url = link + `${page}.htm`;
       http.get(url, (resp) => {
         let html = "";
 

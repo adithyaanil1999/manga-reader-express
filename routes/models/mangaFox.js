@@ -19,9 +19,7 @@ class MangaHere {
               let imagecount = html.substring(html.lastIndexOf("imagecount"));
               imagecount = imagecount.substring(0, imagecount.indexOf(";"));
               imagecount = imagecount.match(/\d+/g).join([]);
-
               imagecount = parseInt(imagecount);
-
               let temp = html.substring(html.lastIndexOf("chapterid"));
               let chapterid = temp.substring(0, temp.indexOf(";"));
               chapterid = chapterid.match(/\d+/g).join([]);
@@ -330,14 +328,27 @@ class MangaHere {
 
   getMangaInfo(url) {
     return new Promise((resolve, reject) => {
-      http.get(url, (resp) => {
-        let html = "";
+      let pathName = url.substring(url.indexOf("/manga"), url.length);
+      var options = {
+        method: "GET",
+        hostname: "fanfox.net",
+        path: pathName,
+        headers: {
+          Cookie: "isAdult=1;",
+        },
+        maxRedirects: 20,
+      };
 
-        resp.on("data", (chunk) => {
-          html += chunk;
+      var req = http.request(options, function (res) {
+        var chunks = [];
+
+        res.on("data", function (chunk) {
+          chunks.push(chunk);
         });
 
-        resp.on("end", () => {
+        res.on("end", function () {
+          var html = Buffer.concat(chunks);
+          html = html.toString();
           try {
             const $ = cheerio.load(html);
             let thumb = $(".detail-info-cover-img").attr("src");
@@ -382,7 +393,13 @@ class MangaHere {
             console.log(e);
           }
         });
+
+        res.on("error", function (error) {
+          console.error(error);
+        });
       });
+
+      req.end();
     });
   }
 
