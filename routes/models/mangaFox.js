@@ -1,7 +1,6 @@
 const http = require("https");
 const axios = require("axios");
 const cheerio = require("cheerio");
-const { SSL_OP_EPHEMERAL_RSA } = require("constants");
 
 class MangaHere {
   getImageList(url, reliable = false) {

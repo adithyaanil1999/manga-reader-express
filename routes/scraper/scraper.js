@@ -15,6 +15,25 @@ const mangaDexObj = new mangaDex();
 const readComicOnlineObj = new readComicOnline();
 const autoCompleteObj = new autoComplete();
 
+const sourcesOBJ = {
+  MGPK: {
+    domain: "mangapark.net",
+    name: "MangaPark",
+  },
+  MGHR: {
+    domain: "mangahere",
+    name: "MangaHere",
+  },
+  MGFX: {
+    domain: "fanfox.net",
+    name: "MangaFOX",
+  },
+  RCO: {
+    domain: "readcomiconline",
+    name: "readComicsOnline",
+  },
+};
+
 router.post("/getImageList", async (req, res) => {
   let url = req.body.url;
   if (url.indexOf("fanfox.net/") !== -1) {
@@ -241,6 +260,10 @@ router.post("/genreManga", (req, res) => {
       res.send({ message: "error" });
       break;
   }
+});
+
+router.get("/sourceList", (req, res) => {
+  res.send(sourcesOBJ);
 });
 
 router.get("/loaderio-d93ad6fc1bf4137c4e38eee965a3e838.html", (req, res) => {
