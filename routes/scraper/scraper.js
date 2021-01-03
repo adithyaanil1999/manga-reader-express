@@ -26,11 +26,11 @@ const sourcesOBJ = {
   },
   MGFX: {
     domain: "fanfox.net",
-    name: "MangaFOX",
+    name: "MangaFox",
   },
   RCO: {
     domain: "readcomiconline",
-    name: "readComicsOnline",
+    name: "ReadComicOnline",
   },
 };
 
