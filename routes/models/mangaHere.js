@@ -134,6 +134,7 @@ class MangaHere {
 
           resp.on("end", async () => {
             try {
+              console.log(html);
               let imagecount = html.substring(html.lastIndexOf("imagecount"));
               imagecount = imagecount.substring(0, imagecount.indexOf(";"));
               imagecount = imagecount.match(/\d+/g).join([]);
@@ -366,7 +367,8 @@ class MangaHere {
                     .children(".title3")
                     .text(),
                   chapterLink:
-                    "https://mangahere.cc" + $(el).children("a").attr("href"),
+                    "https://www.mangahere.cc" +
+                    $(el).children("a").attr("href"),
                   chapDate: $(el)
                     .children("a")
                     .children(".detail-main-list-main")
