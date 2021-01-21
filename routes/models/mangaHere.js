@@ -8,7 +8,6 @@ class MangaHere {
       return new Promise((resolve, reject) => {
         http.get(url, (resp) => {
           let html = "";
-
           resp.on("data", (chunk) => {
             html += chunk;
           });
@@ -367,7 +366,7 @@ class MangaHere {
                     .children(".title3")
                     .text(),
                   chapterLink:
-                    "https://fanfox.net" + $(el).children("a").attr("href"),
+                    "https://mangahere.cc" + $(el).children("a").attr("href"),
                   chapDate: $(el)
                     .children("a")
                     .children(".detail-main-list-main")
