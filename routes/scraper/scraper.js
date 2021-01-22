@@ -110,8 +110,8 @@ router.post("/autocomplete", (req, res) => {
 
 router.post("/search", (req, res) => {
   let title = req.body.title;
-  let maxItem = 20;
-  let maxComicItem = 20;
+  let maxItem = req.body.maxItems;
+  let maxComicItem = req.body.maxItems;
   if (req.body.type === "manga") {
     {
       mangaParkObj.search(maxItem, title, []).then((data) => {
