@@ -51,7 +51,7 @@ class MangaPark {
             let tempObj = {};
             if ($("body").find($(".no-match")).length !== 0) {
               resolve({
-                LatestManga: "end",
+                LatestManga: [],
               });
             } else {
               $(".manga-list")
@@ -391,8 +391,8 @@ class MangaPark {
             let tempObj = {};
 
             if ($("body").find($(".no-match")).length !== 0) {
-              res.send({
-                LatestManga: "end",
+              resolve({
+                LatestManga: [],
               });
             } else {
               $(".ls1")
