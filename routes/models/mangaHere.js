@@ -191,7 +191,6 @@ class MangaHere {
 
   getMangaList(pageNo) {
     let url = `https://www.mangahere.cc/directory/${pageNo}.htm`;
-    console.log(url)
     return new Promise((resolve, reject) => {
       http.get(url, (resp) => {
         let html = "";
@@ -356,7 +355,7 @@ class MangaHere {
             let author = $(".detail-info-right-say").children("a").text();
             let lastUpdate = $(".detail-main-list-title-right").text();
             let desc = $(".detail-info-right-content").text();
-
+            desc += $(".fullcontent").text();
             let chapterList = [];
             $(".detail-main-list")
               .children("li")

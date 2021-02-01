@@ -356,7 +356,7 @@ class MangaHere {
             let author = $(".detail-info-right-say").children("a").text();
             let lastUpdate = $(".detail-main-list-title-right").text();
             let desc = $(".detail-info-right-content").text();
-
+            desc += $(".fullcontent").text();
             let chapterList = [];
             $(".detail-main-list")
               .children("li")

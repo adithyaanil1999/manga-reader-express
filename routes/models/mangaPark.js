@@ -245,6 +245,7 @@ class MangaPark {
   getMangaInfo(url) {
     return new Promise((resolve, reject) => {
       http.get(url, (resp) => {
+        // console.log(url);
         let html = "";
         resp.on("data", (chunk) => {
           html += chunk;
@@ -256,6 +257,9 @@ class MangaPark {
             let thumb = $(".cover").children("img").attr("data-cfsrc");
             let title = $(".pb-1").children("h2").children("a").text();
             let desc = $(".summary").text();
+            if(desc.indexOf('[') !== -1){
+              desc = desc.substring(0,desc.indexOf('['));
+            }
             let status = $(".attr")
               .children("tbody")
               .children("tr")
