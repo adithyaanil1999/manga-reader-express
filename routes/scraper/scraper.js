@@ -31,6 +31,7 @@ const sourcesOBJ = {
   RCO: {
     domain: "readcomiconline",
     name: "ReadComicOnline",
+    isComic:true
   },
 };
 
