@@ -16,10 +16,6 @@ const readComicOnlineObj = new readComicOnline();
 const autoCompleteObj = new autoComplete();
 
 const sourcesOBJ = {
-  MGPK: {
-    domain: "mangapark.net",
-    name: "MangaPark",
-  },
   MGHR: {
     domain: "mangahere",
     name: "MangaHere",
