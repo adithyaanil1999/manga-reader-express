@@ -19,6 +19,8 @@
     "express": "^4.17.1",
     "form-data": "^3.0.0",
     "mangadex-full-api": "^4.0.0",
+    "moment": "^2.29.1",
+    "request": "^2.88.2",
     "underscore": "^1.12.0"
   },
   "devDependencies": {

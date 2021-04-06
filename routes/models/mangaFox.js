@@ -245,6 +245,7 @@ class MangaHere {
   search(maxItem, title, finalArray) {
     return new Promise((resolve, reject) => {
       let url = "https://fanfox.net/search?title=" + encodeURI(title);
+      console.log(url)
       http.get(url, (resp) => {
         let html = "";
         resp.on("data", (chunk) => {

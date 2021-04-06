@@ -254,7 +254,6 @@ class MangaPark {
         resp.on("end", () => {
           try {
             const $ = cheerio.load(html);
-            console.log(html)
             let thumb = $(".cover").children("img").attr("data-cfsrc");
             let title = $(".pb-1").children("h2").children("a").text();
             let desc = $(".summary").text();
