@@ -129,7 +129,6 @@ router.post("/search", (req, res) => {
       // mangaParkObj.search(maxItem, title, []).then((data) => {
       mangaFoxObj.search(maxItem, title, []).then((data) => {
         mangaHereObj.search(maxItem, title, data).then((data) => {
-          console.log(data)
           mangaSeeObj.search(maxItem,title,data).then((data)=>{
             res.send({ searchArray: data });
           });

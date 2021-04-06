@@ -157,14 +157,17 @@ class MangaHere {
               // key wasn't found
                 return -1;
               }
-
-          var hit = Dir[binarySearch(Dir,title)];
-          finalArray.push({
-            src: "MGSE",
-            link: "https://mangasee123.com/manga/"+ hit.i,
-            thumb: "https://cover.nep.li/cover/" + hit.i + ".jpg",
-            title:hit.s,
-          }); 
+          
+          var hitIndex = binarySearch(Dir,title)
+          var hit = Dir[hitIndex];
+          if(hitIndex !== -1){
+            finalArray.push({
+              src: "MGSE",
+              link: "https://mangasee123.com/manga/"+ hit.i,
+              thumb: "https://cover.nep.li/cover/" + hit.i + ".jpg",
+              title:hit.s,
+            }); 
+          }
             resolve(finalArray);
           } catch (e) {
             console.log(e);
