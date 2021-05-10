@@ -35,7 +35,8 @@ class MangaPark {
   }
 
   getMangaList(pageNo) {
-    let url = `https://mangapark.net/search?orderby=views_a&genres-exclude=smut&orderby=views_m&page=${pageNo}`;
+    console.log('here')
+    let url = `https://v2.mangapark.net/search?orderby=views_a&genres-exclude=smut&orderby=views_m&page=${pageNo}`;
     return new Promise((resolve, reject) => {
       http.get(url, (resp) => {
         let html = "";
@@ -47,6 +48,8 @@ class MangaPark {
         resp.on("end", () => {
           try {
             const $ = cheerio.load(html);
+            console.log(html)
+            console.log(1)
             let mangaArr = [];
             let tempObj = {};
             if ($("body").find($(".no-match")).length !== 0) {
