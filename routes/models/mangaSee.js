@@ -91,7 +91,6 @@ class MangaHere {
         resp.on("end", () => {
           try {
             const $ = cheerio.load(html);
-            console.log(html)
             function evalMangaList(html){
                 var arr = [];
                 var sub = html.substring(html.lastIndexOf("LatestJSON"),);
@@ -122,6 +121,8 @@ class MangaHere {
             
           } catch (e) {
             console.log(e);
+            console.log(html)
+
           }
         });
         resp.on("error", () => {
