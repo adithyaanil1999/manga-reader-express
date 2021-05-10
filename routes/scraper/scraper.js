@@ -31,10 +31,10 @@ const sourcesOBJ = {
     name: "ReadComicOnline",
     isComic:true
   },
-  MGSE:{
-    domain: "mangasee123.com",
-    name: "Mangasee",
-  }
+  // MGSE:{
+  //   domain: "mangasee123.com",
+  //   name: "Mangasee",
+  // }
 };
 
 router.post("/getImageList", async (req, res) => {
