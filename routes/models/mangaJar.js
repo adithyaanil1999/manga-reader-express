@@ -260,38 +260,55 @@ class MangaJar{
                 });
               });
 
-            let chap_pages = $(".pagination").children("li").length - 3;
+            let chap_pages = $(".chapters-infinite-pagination").children("nav").children(".pagination").children(".page-item").length - 3;
+            // console.log(chap_pages)
             let $2 = null
           
             function doRequest(link){
+              // console.log(link)
               let chap_list = [];
-              return new Promise((resolve, reject) => {
-                http.get(link, (resp) => {
-                  let html = "";
-          
-                  resp.on("data", (chunk) => {
-                    html += chunk;
-                  });
-          
-                  resp.on("end", () => {
-                    
-                    $2 = cheerio.load(html);
-                    $2(".chapter-list-container")
-                      .children("li")
-                      .each((idx, el) => {
-                        chap_list.push({
-                          chapterTitle:$2(el).children("a").children("span").text().trim(),
-                          chapterLink:"https://mangajar.com"+$2(el).children("a").attr("href"),
-                          chapDate:$2(el).children("span").text().trim(),
-                        });
+              try {
+                return new Promise((resolve, reject) => {
+                
+                    http.get(link, (resp) => {
+                      let html = "";
+
+                      resp.on("data", (chunk) => {
+                        html += chunk;
                       });
 
-                    resolve(chap_list)
-                  
-                  })
+                    
+              
+                      resp.on("end", () => {
+                        
+
+                        $2 = cheerio.load(html);
+                        $2(".chapter-list-container")
+                          .children("li")
+                          .each((idx, el) => {
+                            chap_list.push({
+                              chapterTitle:$2(el).children("a").children("span").text().trim(),
+                              chapterLink:"https://mangajar.com"+$2(el).children("a").attr("href"),
+                              chapDate:$2(el).children("span").text().trim(),
+                            });
+                          });
+    
+                        resolve(chap_list)
+                      
+                      })
+
+                      
+
+                      
+                    }).on('error', (e) => {
+                      console.error(e);
+                    });
+                    
                 });
               }
-              )
+              catch (error) {
+                console.log(error)
+              }
             }
 
             for(let i = 2 ; i < chap_pages +2; i++){
