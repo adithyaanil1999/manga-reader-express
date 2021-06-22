@@ -1,20 +1,24 @@
 var express = require("express");
 var router = express.Router();
 
-const mangaPark = require("../models/mangaPark");
+// const mangaPark = require("../models/mangaPark");
 const mangaHere = require("../models/mangaHere");
 const mangaFox = require("../models/mangaFox");
 const mangaDex = require("../models/mangaDex");
 const mangaSee = require("../models/mangaSee");
 const readComicOnline = require("../models/readComicOnline");
 const autoComplete = require("../models/autoComplete");
+const mangaJar = require("../models/mangaJar");
 
-const mangaParkObj = new mangaPark();
+
+
+// const mangaJarObj = new mangaPark();
 const mangaHereObj = new mangaHere();
 const mangaFoxObj = new mangaFox();
 const mangaDexObj = new mangaDex();
 const mangaSeeObj = new mangaSee();
 const readComicOnlineObj = new readComicOnline();
+const mangaJarObj = new mangaJar();
 const autoCompleteObj = new autoComplete();
 
 const sourcesOBJ = {
@@ -31,14 +35,14 @@ const sourcesOBJ = {
     name: "ReadComicOnline",
     isComic:true
   },
-  // MGPK: {
-  //   domain: "v2.mangapark.net",
-  //   name: "mgpk",
-  // },
-  MGSE:{
-    domain: "mangasee123.com",
-    name: "Mangasee",
+  MGJR:{
+    domain: "mangajar",
+    name: "MangaJar",
   }
+  // MGSE:{
+  //   domain: "mangasee123.com",
+  //   name: "Mangasee",
+  // }
 };
 
 router.post("/getImageList", async (req, res) => {
@@ -51,8 +55,8 @@ router.post("/getImageList", async (req, res) => {
     mangaHereObj.getImageList(url, req.body.reliable).then((data) => {
       res.send(data);
     });
-  } else if (url.indexOf("mangapark.net") !== -1) {
-    mangaParkObj.getImageList(url).then((data) => {
+  } else if (url.indexOf("mangajar") !== -1) {
+    mangaJarObj.getImageList(url).then((data) => {
       res.send(data);
     });
   } else if (url.indexOf("mangasee123") !== -1) {
@@ -86,11 +90,6 @@ router.post("/getMangaList", (req, res) => {
         res.send(data);
       });
       break;
-    case "MGPK":
-      mangaParkObj.getMangaList(pageNo).then((data) => {
-        res.send(data);
-      });
-      break;
     case "MGSE":
         mangaSeeObj.getMangaList(pageNo).then((data) => {
           res.send(data);
@@ -104,6 +103,11 @@ router.post("/getMangaList", (req, res) => {
     case "RCO":
       readComicOnlineObj.getMangaList(pageNo).then((data) => {
         res.send(data);
+      });
+      break;
+    case "MGJR":
+      mangaJarObj.getMangaList(pageNo).then((data)=>{
+        res.send(data)
       });
       break;
     default:
@@ -130,15 +134,13 @@ router.post("/search", (req, res) => {
   let maxComicItem = req.body.maxItems;
   if (req.body.type === "manga") {
     {
-      // mangaParkObj.search(maxItem, title, []).then((data) => {
       mangaFoxObj.search(maxItem, title, []).then((data) => {
         mangaHereObj.search(maxItem, title, data).then((data) => {
-          mangaSeeObj.search(maxItem,title,data).then((data)=>{
-            res.send({ searchArray: data });
-          });
+          mangaJarObj.search(maxItem,title,data).then((data)=>{
+              res.send({ searchArray: data });
+          })
         });
       });
-      // });
     }
   } else if (req.body.type === "comic") {
     try {
@@ -160,8 +162,8 @@ router.post("/getLatestChapter", (req, res) => {
         res.send(data);
       });
       break;
-    case "MGPK":
-      mangaParkObj.getLatestChapter(req.body.link).then((resp) => {
+    case "MGJR":
+      mangaJarObj.getLatestChapter(req.body.link).then((resp) => {
         res.send(resp);
       });
       break;
@@ -186,7 +188,7 @@ router.post("/getLatestChapter", (req, res) => {
       });
       break;
     default:
-      res.send({ message: "error" });
+      res.send({ message: "Latest error" });
       break;
   }
 });
@@ -202,8 +204,8 @@ router.post("/getMangaInfo", (req, res) => {
     mangaHereObj.getMangaInfo(url).then((data) => {
       res.send(data);
     });
-  } else if (url.indexOf("mangapark.net") !== -1) {
-    mangaParkObj.getMangaInfo(url).then((data) => {
+  } else if (url.indexOf("mangajar") !== -1) {
+    mangaJarObj.getMangaInfo(url).then((data) => {
       res.send(data);
     });
   } else if (url.indexOf("mangasee123") !== -1) {
@@ -228,8 +230,8 @@ router.post("/getGenres", (req, res) => {
         res.send(data);
       });
       break;
-    case "MGPK":
-      mangaParkObj.getGenre().then((data) => {
+    case "MGJR":
+      mangaJarObj.getGenre().then((data) => {
         res.send(data);
       });
       break;
@@ -266,8 +268,8 @@ router.post("/genreManga", (req, res) => {
         res.send(data);
       });
       break;
-    case "MGPK":
-      mangaParkObj.getGenreManga(req.body.link, req.body.page).then((data) => {
+    case "MGJR":
+      mangaJarObj.getGenreManga(req.body.link, req.body.page).then((data) => {
         res.send(data);
       });
       break;
