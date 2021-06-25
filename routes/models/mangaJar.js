@@ -15,11 +15,12 @@ class MangaJar{
           try {
             const $ = cheerio.load(html);
             let img = [];
-
+            // console.log(html)
             $(".carousel-inner")
-              .children("div")
+              .children(".carousel-item")
               .each((i,e)=>{
                 let text = $(e).text();
+                console.log(text)
                 if(text.indexOf("Last chapter") == -1){
                   let src = $(e).children("img").attr("data-src");
                   if(src === undefined){
@@ -28,7 +29,18 @@ class MangaJar{
                   img.push(src);
                 }
               })
-            
+            if(img.length === 0){
+              $(".chapter-images")
+              .children("img")
+              .each((i,e)=>{
+                let src = $(e).attr("data-src");
+                if(src === undefined){
+                  src = $(e).attr("src");
+                }
+                img.push(src);
+                
+              })
+            }
             resolve({ imageList: img });
           } catch (error) {
             console.log(error);
