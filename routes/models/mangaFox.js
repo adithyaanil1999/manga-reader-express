@@ -191,7 +191,7 @@ class MangaHere {
   }
 
   getMangaList(pageNo) {
-    let url = `https://fanfox.net/directory/${pageNo}.html`;
+    let url = `https://fanfox.net/new/${pageNo}.html`;
     return new Promise((resolve, reject) => {
       http.get(url, (resp) => {
         let html = "";

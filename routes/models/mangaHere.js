@@ -190,7 +190,7 @@ class MangaHere {
   }
 
   getMangaList(pageNo) {
-    let url = `https://www.mangahere.cc/directory/${pageNo}.htm`;
+    let url = `https://www.mangahere.cc/new/${pageNo}.htm`;
     return new Promise((resolve, reject) => {
       http.get(url, (resp) => {
         let html = "";
