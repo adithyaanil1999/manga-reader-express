@@ -190,7 +190,7 @@ class MangaHere {
   }
 
   getMangaList(pageNo) {
-    let url = `https://www.mangahere.cc/new/${pageNo}.htm`;
+    let url = `https://www.mangahere.cc/latest/${pageNo}/`;
     return new Promise((resolve, reject) => {
       http.get(url, (resp) => {
         let html = "";
@@ -205,14 +205,14 @@ class MangaHere {
             const $ = cheerio.load(html);
             let mangaArr = [];
             let tempObj = {};
-            $(".manga-list-1-list")
+            $(".manga-list-4-list")
               .children("li")
               .each((idx, el) => {
                 let desc = $(el).children("p").text();
                 desc = desc.replace(/\n/g, "");
                 desc = desc.replace(/\\/g, "");
                 let title = $(el)
-                  .children(".manga-list-1-item-title")
+                  .children(".manga-list-4-item-title")
                   .children("a")
                   .text();
                 let link = $(el).children("a").attr("href");

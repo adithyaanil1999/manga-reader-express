@@ -191,7 +191,9 @@ class MangaHere {
   }
 
   getMangaList(pageNo) {
-    let url = `https://fanfox.net/new/${pageNo}.html`;
+    // let url = `https://fanfox.net/new/${pageNo}.html`;
+    let url = `https://fanfox.net/releases/${pageNo}.html`;
+
     return new Promise((resolve, reject) => {
       http.get(url, (resp) => {
         let html = "";
@@ -206,14 +208,14 @@ class MangaHere {
             const $ = cheerio.load(html);
             let mangaArr = [];
             let tempObj = {};
-            $(".manga-list-1-list")
+            $(".manga-list-4-list")
               .children("li")
               .each((idx, el) => {
                 let desc = $(el).children("p").text();
                 desc = desc.replace(/\n/g, "");
                 desc = desc.replace(/\\/g, "");
                 let title = $(el)
-                  .children(".manga-list-1-item-title")
+                  .children(".manga-list-4-item-title")
                   .children("a")
                   .text();
                 let link = $(el).children("a").attr("href");
