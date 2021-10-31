@@ -238,12 +238,9 @@ class MangaJar{
                           .children("img")
                           .attr("src");
             let title = $(".card-body")
-                          .children("div")
-                          .eq(0)
-                          .children("div")
-                          .eq(0)
-                          .children("img")
-                          .attr("title");
+                          .children("h1")
+                          .children("span")
+                          .text();
             let desc = $(".manga-description")
                           .text()
                           .trim();
@@ -435,6 +432,56 @@ class MangaJar{
               });
             // }
           } catch (e) {
+            console.log(e);
+          }
+        });
+      });
+    });
+  }
+
+  //Error Fix For Link
+  getLinkFromName(name){
+    return new Promise((resolve, reject) => {
+      // console.log(name)
+
+      let url = "https://mangajar.com/search?q=" + encodeURI(name.split('-')[0]);
+      console.log(url)
+      http.get(url, (resp) => {
+        let html = "";
+
+        resp.on("data", (chunk) => {
+          html += chunk;
+        });
+
+        resp.on("end", () => {
+          try {
+            const $ = cheerio.load(html);
+            let maxItem = 1
+            let link = ''
+            for (let i = 0; i < maxItem; i++) {
+              if (
+                $(".row")
+                  .children("div")
+                  .children("div")
+                  .eq(0)
+                  .children("article").length !== 0    
+                ){
+                  link = 
+                    "https://mangajar.com" +
+                    $(".row")
+                    .children("div")
+                    .children("div")
+                    .eq(0)
+                    .children("article")
+                    .eq(i)
+                    .children("a")
+                    .attr("href")
+
+                  resolve({link:link,name:name.split('- ')[0].trim()})
+                }
+              }
+          }
+          catch (e) {
             console.log(e);
           }
         });
