@@ -22,14 +22,14 @@ const mangaJarObj = new mangaJar();
 const autoCompleteObj = new autoComplete();
 
 const sourcesOBJ = {
-  MGHR: {
-    domain: "mangahere",
-    name: "MangaHere",
-  },
-  MGFX: {
-    domain: "fanfox.net",
-    name: "MangaFox",
-  },
+  // MGHR: {
+  //   domain: "mangahere",
+  //   name: "MangaHere",
+  // },
+  // MGFX: {
+  //   domain: "fanfox.net",
+  //   name: "MangaFox",
+  // },
   RCO: {
     domain: "readcomiconline",
     name: "ReadComicOnline",
