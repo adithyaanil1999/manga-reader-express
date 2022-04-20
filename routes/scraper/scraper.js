@@ -301,6 +301,22 @@ router.post("/genreManga", (req, res) => {
   }
 });
 
+router.post("/errorFixer", (req, res) => {
+  switch (req.body.src) {
+    case  "MGJR":
+      if(req.body.fix === "linkFix"){
+        mangaJarObj.getLinkFromName(req.body.name)
+        .then((data)=>{
+          res.send(data);
+        })
+      }
+      break;
+    default:
+      res.send({ message: "error" });
+      break;
+  };
+});
+
 router.get("/sourceList", (req, res) => {
   res.send(sourcesOBJ);
 });
