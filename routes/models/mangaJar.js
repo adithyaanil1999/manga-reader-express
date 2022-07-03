@@ -20,7 +20,6 @@ class MangaJar{
               .children(".carousel-item")
               .each((i,e)=>{
                 let text = $(e).text();
-                console.log(text)
                 if(text.indexOf("Last chapter") == -1){
                   let src = $(e).children("img").attr("data-src");
                   if(src === undefined){
@@ -54,8 +53,8 @@ class MangaJar{
     });
   }
 
-  getMangaList(pageNo) {
-    let url = `https://mangajar.com/manga?sortBy=-last_chapter_at&translated%5B0%5D=0&translated%5B1%5D=1&years%5B0%5D=2020&years%5B1%5D=2019&years%5B2%5D=2018&years%5B3%5D=2017&years%5B4%5D=2016&years%5B5%5D=2015&years%5B6%5D=2014&years%5B7%5D=2013&years%5B8%5D=2012&years%5B9%5D=2011&years%5B10%5D=2010&years%5B11%5D=2009&years%5B12%5D=2008&years%5B13%5D=2007&years%5B14%5D=2006&years%5B15%5D=2005&years%5B16%5D=2004&years%5B17%5D=2003&years%5B18%5D=2002&years%5B19%5D=2001&years%5B20%5D=2000&years%5B21%5D=1999&years%5B22%5D=1998&years%5B23%5D=1997&years%5B24%5D=1996&years%5B25%5D=1995&years%5B26%5D=1994&years%5B27%5D=1993&years%5B28%5D=1992&years%5B29%5D=1991&years%5B30%5D=1990&years%5B31%5D=1989&years%5B32%5D=1988&years%5B33%5D=1987&years%5B34%5D=1986&years%5B35%5D=1985&years%5B36%5D=1984&years%5B37%5D=1983&years%5B38%5D=1982&years%5B39%5D=1981&years%5B40%5D=1980&years%5B41%5D=1979&years%5B42%5D=1976&years%5B43%5D=1972&years%5B44%5D=1969&years%5B45%5D=1968&years%5B46%5D=1967&years%5B47%5D=0&genres%5B0%5D=1&genres%5B1%5D=2&genres%5B2%5D=3&genres%5B3%5D=4&genres%5B4%5D=5&genres%5B5%5D=6&genres%5B6%5D=7&genres%5B7%5D=14&genres%5B8%5D=15&genres%5B9%5D=16&genres%5B10%5D=20&genres%5B11%5D=21&genres%5B12%5D=22&genres%5B13%5D=29&genres%5B14%5D=35&genres%5B15%5D=50&genres%5B16%5D=51&genres%5B17%5D=52&genres%5B18%5D=61&genres%5B19%5D=67&genres%5B20%5D=70&genres%5B21%5D=79&genres%5B22%5D=164&genres%5B23%5D=212&genres%5B24%5D=248&genres%5B25%5D=249&genres%5B26%5D=295&genres%5B27%5D=344&genres%5B28%5D=394&genres%5B29%5D=481&genres%5B30%5D=545&genres%5B31%5D=572&genres%5B32%5D=711&genres%5B33%5D=731&genres%5B34%5D=743&genres%5B35%5D=836&genres%5B36%5D=1067&genres%5B37%5D=1068&genres%5B38%5D=1388&genres%5B39%5D=1409&genres%5B40%5D=1627&genres%5B41%5D=1681&genres%5B42%5D=1717&genres%5B43%5D=1819&genres%5B44%5D=2142&genres%5B45%5D=3898&genres%5B46%5D=4242&genres%5B47%5D=4992&genres%5B48%5D=4993&genres%5B49%5D=5007&genres%5B50%5D=5019&genres%5B51%5D=5020&genres%5B52%5D=5055&genres%5B53%5D=5133&genres%5B54%5D=5142&genres%5B55%5D=5296&genres%5B56%5D=5372&genres%5B57%5D=5590&genres%5B58%5D=5716&page=${pageNo}`;
+  getDashboardItems(){
+    const url = 'https://mangajar.com/';
     return new Promise((resolve, reject) => {
       http.get(url, (resp) => {
         let html = "";
@@ -64,59 +63,58 @@ class MangaJar{
           html += chunk;
         });
 
-        resp.on("end", () => {
+        resp.on("end", async () => {
           try {
             const $ = cheerio.load(html);
-            let mangaArr = [];
-            let tempObj = {};
-            if ($(".card-body").children("div").eq(0).children("article").length == 0) {
-              resolve({
-                LatestManga: [],
-              });
-            } else {
-              $(".card-body")
-                .children("div")
-                .eq(0)
-                .children("article")
-                .each((idx, el) => {
-                  let title = $(el)
-                    .children("a")
-                    .eq(0)
-                    .attr("title")
-                  // console.log(title)
-                  let link = $(el)
-                    .children("a")
-                    .attr("href")
-                    
-                  link = "https://mangajar.com" + link;
-                  let imageLink = $(el)
-                    .children("a")
-                    .children("img")
-                    .attr("data-src")
+            let TrendingItems = [];
+            let popularItems = [];
+            let newUpdates = [];
+            $(".splide__list").eq(1).children("article").each(
+              (i,e)=>{
+                TrendingItems.push({
+                  link: 'https://mangajar.com'+ $(e).children(".poster-container").children("a").attr("href"),
+                  thumb: $(e).children(".poster-container").children("a").children("img").attr("src") || $(e).children(".poster-container").children("a").children("img").attr("data-splide-lazy"),
+                  title: $(e).children(".poster-container").children("a").attr("title")
+                })
+            });
+            let featuredIndex = Math.floor(Math.random() * TrendingItems.length)
+            let featuredLink = TrendingItems[featuredIndex].link 
+            const featuredInfo = await this.getMangaInfo(featuredLink,true);
+            $(".splide__list").eq(0).children("article").each(
+              (i,e)=>{
+                newUpdates.push({
+                  link: 'https://mangajar.com'+ $(e).children(".poster-container").children("a").attr("href"),
+                  thumb: $(e).children(".poster-container").children("a").children("img").attr("src") || $(e).children(".poster-container").children("a").children("img").attr("data-splide-lazy"),
+                  title: $(e).children(".poster-container").children("a").attr("title")
+                })
+            });
+            $(".splide__list").eq(3).children("article").each(
+              (i,e)=>{
+                popularItems.push({
+                  link: 'https://mangajar.com'+ $(e).children(".poster-container").children("a").attr("href"),
+                  thumb: $(e).children(".poster-container").children("a").children("img").attr("src")|| $(e).children(".poster-container").children("a").children("img").attr("data-splide-lazy"),
+                  title: $(e).children(".poster-container").children("a").attr("title")
+                })
+            });
 
-                  if(imageLink === undefined){
-                    imageLink = $(el)
-                    .children("a")
-                    .children("img")
-                    .attr("src")
-                  }
-
-                  tempObj = {
-                    description: "",
-                    title: title,
-                    link: link,
-                    thumb: imageLink,
-                  };
-
-                  mangaArr.push(tempObj);
-                });
-
-              resolve({
-                LatestManga: mangaArr,
-              });
+            if(featuredInfo){
+              resolve(
+                {
+                  featuredItemInfo: {
+                    thumb: featuredInfo.mangaInfo.thumb,
+                    title: featuredInfo.mangaInfo.title,
+                    desc: featuredInfo.mangaInfo.desc,
+                    link: featuredLink,
+                  },
+                  TrendingItems: TrendingItems,
+                  popularItems: popularItems,
+                  newUpdates: newUpdates
+                }
+              )
             }
           } catch (error) {
-            console.log(error);
+            reject(error)
+            console.log(error)
           }
         });
       });
@@ -126,7 +124,6 @@ class MangaJar{
   search(maxItem, title, finalArray) {
     return new Promise((resolve, reject) => {
       let url = "https://mangajar.com/search?q=" + encodeURI(title);
-      console.log(url)
       http.get(url, (resp) => {
         let html = "";
 
@@ -137,7 +134,6 @@ class MangaJar{
         resp.on("end", () => {
           try {
             const $ = cheerio.load(html);
-            console.log(html)
             for (let i = 0; i < maxItem; i++) {
               if (
                 $(".row")
@@ -147,18 +143,30 @@ class MangaJar{
                   .children("article").length !== 0
                   
                 ) {
-                
+                let thumbLink =  $(".row").children("div").children("div")
+                                .eq(0)
+                                .children("article")
+                                .eq(i)
+                                .children("a")
+                                .children("img")
+                                .attr("data-src") ?
+                                $(".row").children("div").children("div")
+                                .eq(0)
+                                .children("article")
+                                .eq(i)
+                                .children("a")
+                                .children("img")
+                                .attr("data-src"):
+                                $(".row").children("div").children("div")
+                                .eq(0)
+                                .children("article")
+                                .eq(i)
+                                .children("a")
+                                .children("img")
+                                .attr("src")
                 finalArray.push({
                   src: "MGJR",
-                  thumb: $(".row")
-                    .children("div")
-                    .children("div")
-                    .eq(0)
-                    .children("article")
-                    .eq(i)
-                    .children("a")
-                    .children("img")
-                    .attr("src"),
+                  thumb: thumbLink,
                   link:
                     "https://mangajar.com" +
                     $(".row")
@@ -192,33 +200,21 @@ class MangaJar{
     });
   }
 
-  getLatestChapter(url) {
-    return new Promise((resolve, reject) => {
-      http.get(url, (resp) => {
-        let html = "";
-
-        resp.on("data", (chunk) => {
-          html += chunk;
-        });
-
-        resp.on("end", () => {
-          try {
-            const $ = cheerio.load(html);
-            resolve({
-              message: $(".chapter-list-container")
-              .children("li")
-              .eq(0)
-              .children("a").children("span").text().trim()
-            });
-          } catch (error) {
-            console.log(e);
-          }
-        });
-      });
+  getLatestChapterIndex(url) {
+    return new Promise(async(resolve, reject) => {
+      try {
+        const resp = await this.getMangaInfo(url);
+        if(resp){
+          resolve(String(resp.mangaInfo.chapterList.length))
+        }
+      } catch (error) {
+        console.log(error)
+      }
+      
     });
   }
 
-  getMangaInfo(url) {
+  getMangaInfo(url,skipBool = false) {
     return new Promise((resolve, reject) => {
       http.get(url, (resp) => {
         let html = "";
@@ -255,88 +251,183 @@ class MangaJar{
                             .text();
               status = status.substring(status.indexOf(':')+1)
               status = status.trim()
-            
+              function NomarlizeDate(date){
+                function timeDifference(current, previous) {
+
+                  var msPerMinute = 60 * 1000;
+                  var msPerHour = msPerMinute * 60;
+                  var msPerDay = msPerHour * 24;
+                  var msPerMonth = msPerDay * 30;
+                  var msPerYear = msPerDay * 365;
+              
+                  var elapsed = current - previous;
+              
+                  if (elapsed < msPerMinute) {
+                       return Math.round(elapsed/1000) + ' seconds ago';   
+                  }
+              
+                  else if (elapsed < msPerHour) {
+                       return Math.round(elapsed/msPerMinute) + ' minutes ago';   
+                  }
+              
+                  else if (elapsed < msPerDay ) {
+                       return Math.round(elapsed/msPerHour ) + ' hours ago';   
+                  }
+              
+                  else if (elapsed < msPerMonth) {
+                      return Math.round(elapsed/msPerDay) + ' days ago';   
+                  }
+              
+                  else if (elapsed < msPerYear) {
+                      return Math.round(elapsed/msPerMonth) + ' months ago';   
+                  }
+              
+                  else {
+                      return Math.round(elapsed/msPerYear ) + ' years ago';   
+                  }
+                }
+                date = date.toLowerCase();
+                if(date.includes("day") || date.includes("hour") || date.includes("second") || date.includes("minute") ){
+                  return date
+                }else{
+                  const monthMap = {
+                    "january" : 0,
+                    "february": 1,
+                    "march": 2,
+                    "april": 3,
+                    "may": 4,
+                    "june": 5,
+                    "july": 6,
+                    "august": 7,
+                    "september": 8,
+                    "october": 9,
+                    "november": 10,
+                    "december": 11
+                  }
+
+                  const currentTimeStamp = Date.now();
+                  date = date.split(" ")
+                  
+                  let newDate = new Date(date[2],monthMap[date[1]],date[0])
+                  newDate = newDate.getTime();
+                  return timeDifference(currentTimeStamp,newDate)
+                }
+            }
+
+            function NomarlizeChapter(chap){
+              let res = chap.match(/\d+(?=\D*$)/)
+              chap = "Chapter "+ res[0]
+              return chap
+            }
 
             let chapterList = [];
-
-            $(".chapter-list-container")
-              .children("li")
-              .each((idx, el) => {
-                chapterList.push({
-                  chapterTitle:$(el).children("a").children("span").text().trim(),
-                  chapterLink:"https://mangajar.com"+$(el).children("a").attr("href"),
-                  chapDate:$(el).children("span").text().trim(),
-                });
-              });
-
-            let chap_pages = $(".chapters-infinite-pagination").children("nav").children(".pagination").children(".page-item").length - 3;
-            // console.log(chap_pages)
-            let $2 = null
-          
+            let countChapter = 1;
             function doRequest(link){
-              // console.log(link)
-              let chap_list = [];
-              try {
-                return new Promise((resolve, reject) => {
+                let $2 = null
+                let chap_list = [];
+                try {
+                  return new Promise((resolve, reject) => {
+                  
+                      http.get(link, (resp) => {
+                        let html = "";
+
+                        resp.on("data", (chunk) => {
+                          html += chunk;
+                        });
+
+                      
                 
-                    http.get(link, (resp) => {
-                      let html = "";
+                        resp.on("end", () => {
+                          
 
-                      resp.on("data", (chunk) => {
-                        html += chunk;
-                      });
+                          $2 = cheerio.load(html);
+                          $2(".chapter-list-container")
+                            .children("li")
+                            .each((idx, el) => {
+                              chap_list.push({
+                                chapterTitle:NomarlizeChapter($2(el).children("a").children("span").text().trim()),
+                                chapterLink:"https://mangajar.com"+$2(el).children("a").attr("href"),
+                                chapterDate:NomarlizeDate($2(el).children("span").text().trim()),
+                              });
+                            });
+      
+                          resolve(chap_list)
+                        
+                        })
 
-                    
-              
-                      resp.on("end", () => {
                         
 
-                        $2 = cheerio.load(html);
-                        $2(".chapter-list-container")
-                          .children("li")
-                          .each((idx, el) => {
-                            chap_list.push({
-                              chapterTitle:$2(el).children("a").children("span").text().trim(),
-                              chapterLink:"https://mangajar.com"+$2(el).children("a").attr("href"),
-                              chapDate:$2(el).children("span").text().trim(),
-                            });
-                          });
-    
-                        resolve(chap_list)
+                        
+                      }).on('error', (e) => {
+                        // console.error(e);
+                        // console.log(link)
+                        reject("NOT_FOUND");
+                      });
                       
-                      })
-
-                      
-
-                      
-                    }).on('error', (e) => {
-                      console.error(e);
-                    });
-                    
+                  });
+                }
+                catch (error) {
+                  console.log(error)
+                }
+              }
+            
+            
+            if(skipBool === false){
+              $(".chapter-list-container")
+                .children("li")
+                .each((idx, el) => {
+                  chapterList.push({
+                    chapterTitle:NomarlizeChapter($(el).children("a").children("span").text().trim()),
+                    chapterLink:"https://mangajar.com"+$(el).children("a").attr("href"),
+                    chapterDate:NomarlizeDate($(el).children("span").text().trim()),
+                  });
                 });
-              }
-              catch (error) {
-                console.log(error)
-              }
-            }
 
-            for(let i = 2 ; i < chap_pages +2; i++){
-              let link = "https://mangajar.com" + $(".pagination").children("li").eq(i).children("a").attr("href");
-              chapterList = chapterList.concat(await doRequest(link));
-            
             }
+            // console.log(chapterList)
+
+            if(skipBool === false){
+              let chap_pages = $(".chapters-infinite-pagination").children("nav").children(".pagination").children(".page-item").eq(-2).text();
+              let link = "https://mangajar.com" + $(".pagination").children("li").eq(2).children("a").attr("href");
+              link = link.slice(0,link.length-2)
+              
+
+              // console.log(chap_pages)
+              for(let i = 2 ; i <= chap_pages; i++){
+                let url = link + "=" + i;
+
+                let data = await doRequest(url);
+                chapterList = chapterList.concat(data);
+              }
+            }
+            // console.log(chapterList)
+
             
-            resolve({
-              mangaInfo: {
-                thumb: thumb,
-                title: title,
-                desc: desc,
-                status: status,
-                author: "",
-                lastUpdate: "",
-                chapterList: chapterList,
-              },
-            });
+            
+            if(skipBool=== false){
+              resolve({
+                mangaInfo: {
+                  thumb: thumb,
+                  title: title,
+                  desc: desc,
+                  status: status,
+                  author: "",
+                  lastUpdate: "",
+                  chapterList: chapterList,
+                },
+              });
+            }else{
+              resolve({
+                mangaInfo: {
+                  thumb: thumb,
+                  title: title,
+                  desc: desc,
+                  status: status,
+                  author: "",
+                  lastUpdate: "",
+                },
+              });
+            }
 
           } catch (e) {
             console.log(e);
@@ -379,9 +470,32 @@ class MangaJar{
     });
   }
 
-  getGenreManga(link, page) {
+  getGenreManga(genreArray, page, sort) {
     return new Promise((resolve, reject) => {
-      let url = link + `?page=${page}`;
+      let url = ''
+      if(sort === 'default'){
+        url = genreArray[0].link+ `?page=${page}`;
+      }else if(sort === "Year (newest first)"){
+        url = genreArray[0].link + `?sortBy=-year&translated%5B0%5D=0&translated%5B1%5D=1&years%5B0%5D=2020&years%5B1%5D=2019&years%5B2%5D=2018&years%5B3%5D=2017&years%5B4%5D=2016&years%5B5%5D=2015&years%5B6%5D=2014&years%5B7%5D=2013&years%5B8%5D=2012&years%5B9%5D=2011&years%5B10%5D=2010&years%5B11%5D=2009&years%5B12%5D=2008&years%5B13%5D=2007&years%5B14%5D=2006&years%5B15%5D=2005&years%5B16%5D=2004&years%5B17%5D=2003&years%5B18%5D=2002&years%5B19%5D=2001&years%5B20%5D=2000&years%5B21%5D=1999&years%5B22%5D=1998&years%5B23%5D=1997&years%5B24%5D=1996&years%5B25%5D=1995&years%5B26%5D=1994&years%5B27%5D=1993&years%5B28%5D=1992&years%5B29%5D=1991&years%5B30%5D=1990&years%5B31%5D=1989&years%5B32%5D=1988&years%5B33%5D=1987&years%5B34%5D=1986&years%5B35%5D=1985&years%5B36%5D=1984&years%5B37%5D=1983&years%5B38%5D=1982&years%5B39%5D=1981&years%5B40%5D=1980&years%5B41%5D=1979&years%5B42%5D=1976&years%5B43%5D=1972&years%5B44%5D=1969&years%5B45%5D=1968&years%5B46%5D=1967&years%5B47%5D=0&page=${page}`
+      }else if(sort === "Year (oldest first)"){
+        url = genreArray[0].link + `?sortBy=year&translated%5B0%5D=0&translated%5B1%5D=1&years%5B0%5D=2020&years%5B1%5D=2019&years%5B2%5D=2018&years%5B3%5D=2017&years%5B4%5D=2016&years%5B5%5D=2015&years%5B6%5D=2014&years%5B7%5D=2013&years%5B8%5D=2012&years%5B9%5D=2011&years%5B10%5D=2010&years%5B11%5D=2009&years%5B12%5D=2008&years%5B13%5D=2007&years%5B14%5D=2006&years%5B15%5D=2005&years%5B16%5D=2004&years%5B17%5D=2003&years%5B18%5D=2002&years%5B19%5D=2001&years%5B20%5D=2000&years%5B21%5D=1999&years%5B22%5D=1998&years%5B23%5D=1997&years%5B24%5D=1996&years%5B25%5D=1995&years%5B26%5D=1994&years%5B27%5D=1993&years%5B28%5D=1992&years%5B29%5D=1991&years%5B30%5D=1990&years%5B31%5D=1989&years%5B32%5D=1988&years%5B33%5D=1987&years%5B34%5D=1986&years%5B35%5D=1985&years%5B36%5D=1984&years%5B37%5D=1983&years%5B38%5D=1982&years%5B39%5D=1981&years%5B40%5D=1980&years%5B41%5D=1979&years%5B42%5D=1976&years%5B43%5D=1972&years%5B44%5D=1969&years%5B45%5D=1968&years%5B46%5D=1967&years%5B47%5D=0&page=${page}`
+      }else if(sort === "Popularity (popular first)"){
+        url = genreArray[0].link+ `?page=${page}`;
+      }else if(sort === "Popularity (unpopular first)"){
+        url = genreArray[0].link + `?sortBy=-popular&translated%5B0%5D=0&translated%5B1%5D=1&years%5B0%5D=2020&years%5B1%5D=2019&years%5B2%5D=2018&years%5B3%5D=2017&years%5B4%5D=2016&years%5B5%5D=2015&years%5B6%5D=2014&years%5B7%5D=2013&years%5B8%5D=2012&years%5B9%5D=2011&years%5B10%5D=2010&years%5B11%5D=2009&years%5B12%5D=2008&years%5B13%5D=2007&years%5B14%5D=2006&years%5B15%5D=2005&years%5B16%5D=2004&years%5B17%5D=2003&years%5B18%5D=2002&years%5B19%5D=2001&years%5B20%5D=2000&years%5B21%5D=1999&years%5B22%5D=1998&years%5B23%5D=1997&years%5B24%5D=1996&years%5B25%5D=1995&years%5B26%5D=1994&years%5B27%5D=1993&years%5B28%5D=1992&years%5B29%5D=1991&years%5B30%5D=1990&years%5B31%5D=1989&years%5B32%5D=1988&years%5B33%5D=1987&years%5B34%5D=1986&years%5B35%5D=1985&years%5B36%5D=1984&years%5B37%5D=1983&years%5B38%5D=1982&years%5B39%5D=1981&years%5B40%5D=1980&years%5B41%5D=1979&years%5B42%5D=1976&years%5B43%5D=1972&years%5B44%5D=1969&years%5B45%5D=1968&years%5B46%5D=1967&years%5B47%5D=0&page=${page}`;
+      }else if(sort === "Alphabet (a-z)"){
+        url = genreArray[0].link + `?sortBy=name&translated%5B0%5D=0&translated%5B1%5D=1&years%5B0%5D=2020&years%5B1%5D=2019&years%5B2%5D=2018&years%5B3%5D=2017&years%5B4%5D=2016&years%5B5%5D=2015&years%5B6%5D=2014&years%5B7%5D=2013&years%5B8%5D=2012&years%5B9%5D=2011&years%5B10%5D=2010&years%5B11%5D=2009&years%5B12%5D=2008&years%5B13%5D=2007&years%5B14%5D=2006&years%5B15%5D=2005&years%5B16%5D=2004&years%5B17%5D=2003&years%5B18%5D=2002&years%5B19%5D=2001&years%5B20%5D=2000&years%5B21%5D=1999&years%5B22%5D=1998&years%5B23%5D=1997&years%5B24%5D=1996&years%5B25%5D=1995&years%5B26%5D=1994&years%5B27%5D=1993&years%5B28%5D=1992&years%5B29%5D=1991&years%5B30%5D=1990&years%5B31%5D=1989&years%5B32%5D=1988&years%5B33%5D=1987&years%5B34%5D=1986&years%5B35%5D=1985&years%5B36%5D=1984&years%5B37%5D=1983&years%5B38%5D=1982&years%5B39%5D=1981&years%5B40%5D=1980&years%5B41%5D=1979&years%5B42%5D=1976&years%5B43%5D=1972&years%5B44%5D=1969&years%5B45%5D=1968&years%5B46%5D=1967&years%5B47%5D=0&page=${page}`;
+      }else if(sort ==="Alphabet (z-a)"){
+        url = genreArray[0].link + `?sortBy=-name&translated%5B0%5D=0&translated%5B1%5D=1&years%5B0%5D=2020&years%5B1%5D=2019&years%5B2%5D=2018&years%5B3%5D=2017&years%5B4%5D=2016&years%5B5%5D=2015&years%5B6%5D=2014&years%5B7%5D=2013&years%5B8%5D=2012&years%5B9%5D=2011&years%5B10%5D=2010&years%5B11%5D=2009&years%5B12%5D=2008&years%5B13%5D=2007&years%5B14%5D=2006&years%5B15%5D=2005&years%5B16%5D=2004&years%5B17%5D=2003&years%5B18%5D=2002&years%5B19%5D=2001&years%5B20%5D=2000&years%5B21%5D=1999&years%5B22%5D=1998&years%5B23%5D=1997&years%5B24%5D=1996&years%5B25%5D=1995&years%5B26%5D=1994&years%5B27%5D=1993&years%5B28%5D=1992&years%5B29%5D=1991&years%5B30%5D=1990&years%5B31%5D=1989&years%5B32%5D=1988&years%5B33%5D=1987&years%5B34%5D=1986&years%5B35%5D=1985&years%5B36%5D=1984&years%5B37%5D=1983&years%5B38%5D=1982&years%5B39%5D=1981&years%5B40%5D=1980&years%5B41%5D=1979&years%5B42%5D=1976&years%5B43%5D=1972&years%5B44%5D=1969&years%5B45%5D=1968&years%5B46%5D=1967&years%5B47%5D=0&page=${page}`
+      }else if(sort === "Date added (newest first)"){
+        url = genreArray[0].link + `?sortBy=-published_at&translated%5B0%5D=0&translated%5B1%5D=1&years%5B0%5D=2020&years%5B1%5D=2019&years%5B2%5D=2018&years%5B3%5D=2017&years%5B4%5D=2016&years%5B5%5D=2015&years%5B6%5D=2014&years%5B7%5D=2013&years%5B8%5D=2012&years%5B9%5D=2011&years%5B10%5D=2010&years%5B11%5D=2009&years%5B12%5D=2008&years%5B13%5D=2007&years%5B14%5D=2006&years%5B15%5D=2005&years%5B16%5D=2004&years%5B17%5D=2003&years%5B18%5D=2002&years%5B19%5D=2001&years%5B20%5D=2000&years%5B21%5D=1999&years%5B22%5D=1998&years%5B23%5D=1997&years%5B24%5D=1996&years%5B25%5D=1995&years%5B26%5D=1994&years%5B27%5D=1993&years%5B28%5D=1992&years%5B29%5D=1991&years%5B30%5D=1990&years%5B31%5D=1989&years%5B32%5D=1988&years%5B33%5D=1987&years%5B34%5D=1986&years%5B35%5D=1985&years%5B36%5D=1984&years%5B37%5D=1983&years%5B38%5D=1982&years%5B39%5D=1981&years%5B40%5D=1980&years%5B41%5D=1979&years%5B42%5D=1976&years%5B43%5D=1972&years%5B44%5D=1969&years%5B45%5D=1968&years%5B46%5D=1967&years%5B47%5D=0&page=${page}`
+      }else if(sort ==="Date added (oldest first)"){
+        url = genreArray[0].link + `?sortBy=published_at&translated%5B0%5D=0&translated%5B1%5D=1&years%5B0%5D=2020&years%5B1%5D=2019&years%5B2%5D=2018&years%5B3%5D=2017&years%5B4%5D=2016&years%5B5%5D=2015&years%5B6%5D=2014&years%5B7%5D=2013&years%5B8%5D=2012&years%5B9%5D=2011&years%5B10%5D=2010&years%5B11%5D=2009&years%5B12%5D=2008&years%5B13%5D=2007&years%5B14%5D=2006&years%5B15%5D=2005&years%5B16%5D=2004&years%5B17%5D=2003&years%5B18%5D=2002&years%5B19%5D=2001&years%5B20%5D=2000&years%5B21%5D=1999&years%5B22%5D=1998&years%5B23%5D=1997&years%5B24%5D=1996&years%5B25%5D=1995&years%5B26%5D=1994&years%5B27%5D=1993&years%5B28%5D=1992&years%5B29%5D=1991&years%5B30%5D=1990&years%5B31%5D=1989&years%5B32%5D=1988&years%5B33%5D=1987&years%5B34%5D=1986&years%5B35%5D=1985&years%5B36%5D=1984&years%5B37%5D=1983&years%5B38%5D=1982&years%5B39%5D=1981&years%5B40%5D=1980&years%5B41%5D=1979&years%5B42%5D=1976&years%5B43%5D=1972&years%5B44%5D=1969&years%5B45%5D=1968&years%5B46%5D=1967&years%5B47%5D=0&page=${page}`
+      }else if(sort ==="Date updated (newest first)"){
+        url = genreArray[0].link + `?sortBy=-last_chapter_at&translated%5B0%5D=0&translated%5B1%5D=1&years%5B0%5D=2020&years%5B1%5D=2019&years%5B2%5D=2018&years%5B3%5D=2017&years%5B4%5D=2016&years%5B5%5D=2015&years%5B6%5D=2014&years%5B7%5D=2013&years%5B8%5D=2012&years%5B9%5D=2011&years%5B10%5D=2010&years%5B11%5D=2009&years%5B12%5D=2008&years%5B13%5D=2007&years%5B14%5D=2006&years%5B15%5D=2005&years%5B16%5D=2004&years%5B17%5D=2003&years%5B18%5D=2002&years%5B19%5D=2001&years%5B20%5D=2000&years%5B21%5D=1999&years%5B22%5D=1998&years%5B23%5D=1997&years%5B24%5D=1996&years%5B25%5D=1995&years%5B26%5D=1994&years%5B27%5D=1993&years%5B28%5D=1992&years%5B29%5D=1991&years%5B30%5D=1990&years%5B31%5D=1989&years%5B32%5D=1988&years%5B33%5D=1987&years%5B34%5D=1986&years%5B35%5D=1985&years%5B36%5D=1984&years%5B37%5D=1983&years%5B38%5D=1982&years%5B39%5D=1981&years%5B40%5D=1980&years%5B41%5D=1979&years%5B42%5D=1976&years%5B43%5D=1972&years%5B44%5D=1969&years%5B45%5D=1968&years%5B46%5D=1967&years%5B47%5D=0&page=${page}`
+      }else if(sort === "Date updated (oldest first)"){
+        url = genreArray[0].link + `?sortBy=last_chapter_at&translated%5B0%5D=0&translated%5B1%5D=1&years%5B0%5D=2020&years%5B1%5D=2019&years%5B2%5D=2018&years%5B3%5D=2017&years%5B4%5D=2016&years%5B5%5D=2015&years%5B6%5D=2014&years%5B7%5D=2013&years%5B8%5D=2012&years%5B9%5D=2011&years%5B10%5D=2010&years%5B11%5D=2009&years%5B12%5D=2008&years%5B13%5D=2007&years%5B14%5D=2006&years%5B15%5D=2005&years%5B16%5D=2004&years%5B17%5D=2003&years%5B18%5D=2002&years%5B19%5D=2001&years%5B20%5D=2000&years%5B21%5D=1999&years%5B22%5D=1998&years%5B23%5D=1997&years%5B24%5D=1996&years%5B25%5D=1995&years%5B26%5D=1994&years%5B27%5D=1993&years%5B28%5D=1992&years%5B29%5D=1991&years%5B30%5D=1990&years%5B31%5D=1989&years%5B32%5D=1988&years%5B33%5D=1987&years%5B34%5D=1986&years%5B35%5D=1985&years%5B36%5D=1984&years%5B37%5D=1983&years%5B38%5D=1982&years%5B39%5D=1981&years%5B40%5D=1980&years%5B41%5D=1979&years%5B42%5D=1976&years%5B43%5D=1972&years%5B44%5D=1969&years%5B45%5D=1968&years%5B46%5D=1967&years%5B47%5D=0&page=${page}`
+      }
       http.get(url, (resp) => {
         let html = "";
 
@@ -394,18 +508,17 @@ class MangaJar{
             const $ = cheerio.load(html);
             let mangaArr = [];
             let tempObj = {};
-
-            // if ($(".row").eq(2).children("article").length == 0) {
-            //   resolve({
-            //     LatestManga: [],
-            //   });
-            // } else {
+            let sortArr = [];
+            $('#sortBy').children('option')
+            .each((i,e)=>{
+              sortArr.push($(e).text().trim() + $(e).attr('data-subtext'))
+            });
+            if($(".flex-item-mini").length > 0){
               $(".flex-item-mini")
                 .each((idx, el) => {
                   let title = $(el)
                     .children("div")
                     .children("a")
-                    .children("img")
                     .attr("title")
                     .trim();
                   let link = $(el)
@@ -428,8 +541,14 @@ class MangaJar{
                 });
 
               resolve({
-                LatestManga: mangaArr,
+                result: {resultList: mangaArr,sorts: sortArr},
               });
+            }else{
+              resolve({
+                result: {resultList: 'END',sorts: sortArr}
+              });
+            }
+            
             // }
           } catch (e) {
             console.log(e);
@@ -439,13 +558,13 @@ class MangaJar{
     });
   }
 
+
   //Error Fix For Link
   getLinkFromName(name){
     return new Promise((resolve, reject) => {
       // console.log(name)
 
       let url = "https://mangajar.com/search?q=" + encodeURI(name.split('-')[0]);
-      console.log(url)
       http.get(url, (resp) => {
         let html = "";
 

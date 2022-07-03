@@ -2,6 +2,8 @@ const http = require("https");
 const axios = require("axios");
 const cheerio = require("cheerio");
 
+
+// this isnt it ive decided auto complete isnt worth the hassle MAL works great for manga but not so much for webtoons anilist has a great API but rate limit sucks soo meh
 class AutoComplete {
   autoCompleteManga(title) {
     return new Promise((resolve, reject) => {
@@ -25,6 +27,7 @@ class AutoComplete {
     });
   }
 
+  // doesnt work at all lol
   autoCompleteComic(title) {
     return new Promise((resolve, reject) => {
       try {
